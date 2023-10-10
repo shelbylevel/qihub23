@@ -1,0 +1,336 @@
+---
+title: "index"
+format: html
+editor: visual
+
+self-contained: true
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = TRUE)
+```
+
+# Contents of AHRQ SDOH Database
+
+The Social Determinants of Health (SDOH) database from AHRQ compiles SDOH-related variables across multiple domains from 87 sources including multiple federal and other data sources. The downloadable files contain a total of 675 variables available by year from 2009 through 2020. Data is available across three geography levels: all 675 variables are available by county level, 319 are available by ZIP code, and 321 variables are available by census tract.
+
+These variables are organized into five main categories containing several topics each: social context (demographics, disability, immigration, living conditions), economic context (employment, income, poverty), education (attainment), physical infrastructure (environment, housing, internet, migration, transportation), and healthcare context (characteristics of facilities, characteristics of providers, distance to provider, health insurance status, health outcomes, health care quality, utilization and costs).
+
+```{r readin-2020-data, include=FALSE}
+library(tidyverse)
+library(readxl)
+
+url0 = "https://www.ahrq.gov/sites/default/files/wysiwyg/sdoh/SDOH_2020_COUNTY_1_0.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+readxl::read_excel(
+  destfile, sheet = 2
+  ) %>%
+  janitor::clean_names() %>%
+  filter(
+    statefips == 39
+    ) %>%
+  mutate(
+    name = stringr::str_remove_all(county, " County")
+  ) -> county
+
+url0 = "https://www.ahrq.gov/sites/default/files/wysiwyg/sdoh/SDOH_2020_ZIPCODE_1_0.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+readxl::read_excel(
+  destfile, sheet = 2
+  ) %>%
+  janitor::clean_names() %>%
+  filter(
+    statefips == 39
+    ) -> zip
+
+url0 = "https://www.ahrq.gov/downloads/sdoh/sdoh_2020_tract_1_0.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+readxl::read_excel(
+  destfile, sheet = 2
+  ) %>%
+  janitor::clean_names() %>%
+  filter(
+    statefips == 39
+    ) -> tract
+
+```
+
+```{r appalachian-counties, include = FALSE}
+
+c(
+  "Adams", "Ashtabula", "Athens", "Belmont", "Brown", 
+  "Carroll", "Clermont", "Columbiana", "Coshocton", 
+  "Gallia", "Guernsey", "Harrison", "Highland", "Hocking",
+  "Holmes", "Jackson", "Jefferson", "Lawrence", "Mahoning",
+  "Meigs", "Monroe", "Morgan", "Muskingum", "Noble", 
+  "Perry", "Pike", "Ross", "Scioto", "Trumbull", 
+  "Tuscarawas", "Vinton", "Washington"
+  ) -> appalachian.ohio 
+
+```
+
+```{r acs-download, include = FALSE}
+library(tidycensus)
+
+get_acs(
+  geography = "tract",
+  state = "OH",
+  variables = "B01003_001",
+  year = 2021,
+  geometry = TRUE
+  ) %>%
+  mutate(
+    name2 = stringr::str_remove_all(NAME, " County, Ohio"),
+    name2 = stringr::str_remove_all(name2, "Census Tract ")
+    ) %>%
+  separate(
+    name2, 
+    into = c("tractnum", "county"),
+    sep = ", ",
+    remove = TRUE
+    ) %>%
+  mutate(
+    appalachian = ifelse(
+      county %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+    ) -> df_tract
+
+get_acs(
+  geography = "zip code tabulation area",
+  variables = "B01003_001",
+  year = 2021,
+  geometry = TRUE
+  ) %>%
+  mutate(
+    county = stringr::str_remove_all(NAME, " County, Ohio"),
+    appalachian = ifelse(county %in% appalachian.ohio, "Appalachian", "Not Appalachian")
+    ) -> df_zip
+
+df_zip %>%
+  inner_join(
+    zip,
+    by = c("GEOID" = "zcta")
+             ) -> sdohzip
+
+get_acs(
+  geography = "county",
+  state = "OH",
+  variables = "B01003_001",
+  year = 2021,
+  geometry = TRUE
+  ) %>%
+  mutate(
+    county = stringr::str_remove_all(NAME, " County, Ohio"),
+    appalachian = ifelse(county %in% appalachian.ohio, "Appalachian", "Not Appalachian")
+    ) -> df_county
+
+df_tract %>%
+  filter(appalachian == "Appalachian") -> appmaptract
+
+df_county %>%
+  filter(appalachian == "Appalachian") -> appmapcounty
+
+```
+
+```{r county-pop-map, fig.cap = "Figure 1: Ohio's Appalachian and Non-Appalachian Counties", fig.height = 9, fig.width = 9, include = TRUE}
+
+df_county %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = estimate),
+    color = "grey75"
+    ) +
+  geom_sf_text(
+    aes(
+      label = county
+      ),
+    color = "black",
+    size = 2.75
+    ) + 
+  geom_sf(
+    data = sf::st_union(appmapcounty), 
+    color = "#FA4616", size = 3, alpha = 0
+    ) +   
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Total Population'
+    )
+```
+
+```{r athens-tract-pop-map, include = TRUE, fig.cap = "Athens County Population by Census Tract"}
+
+df_tract %>%
+  filter(
+    county == 'Athens'
+  ) %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = estimate),
+    color = "grey") +
+  #geom_sf_text(
+    #aes(
+      #label = county
+      #),
+    #color = "black",
+    #size = 2.75
+    #) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "bottom") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  labs(fill = "Dollars")
+#  scale_fill_gradientn(colours = terrain.colors(5)) 
+```
+
+```{r app-tract-pop-map, include = TRUE, fig.cap = "Appalachia Population by Census Tract"}
+
+df_tract %>%
+  filter(
+    appalachian == 'Appalachian'
+  ) %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = estimate),
+    color = "grey") +
+  #geom_sf_text(
+    #aes(
+      #label = county
+      #),
+    #color = "black",
+    #size = 2.75
+    #) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "bottom") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  labs(fill = "Dollars")
+#  scale_fill_gradientn(colours = terrain.colors(5)) 
+
+```
+
+```{r add-geometry-to-sdoh-data, include = FALSE}
+df_county %>%
+  inner_join(
+    county,
+    by = c("GEOID" = "countyfips")
+  ) -> sdohcounty
+
+df_zip %>%
+  inner_join(
+    zip,
+    by = c("GEOID" = "zcta")
+  ) -> sdohzip
+
+df_tract %>%
+  inner_join(
+    tract,
+    by = c("GEOID" = "tractfips")
+  ) -> sdohtract
+```
+
+```{r median-household-income-county, fig.cap = "Median Household Income by County", fig.height = 9, fig.width = 9, include = TRUE}
+
+sdohcounty %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_median_hh_inc),
+    color = "white") +
+  geom_sf_text(
+    aes(
+      label = county.x
+      ),
+    color = "black",
+    size = 2.75
+    ) + 
+  geom_sf(
+    data = sf::st_union(appmapcounty), 
+    color = "#FA4616", size = 3, alpha = 0
+    ) +   
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "bottom") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  labs(fill = "Dollars")
+#  scale_fill_gradientn(colours = terrain.colors(5)) 
+
+```
+
+```{r median-household-income-zipcode, fig.cap = "Median Household Income by Zip Code", fig.height = 9, fig.width = 9, include = TRUE}
+
+sdohzip %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_median_hh_inc_zc),
+    color = "white") +
+  geom_sf(
+    data = sf::st_union(appmapcounty), 
+    color = "#FA4616", size = 3, alpha = 0
+    ) +   
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "bottom") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  labs(fill = "Dollars")
+#  scale_fill_gradientn(colours = terrain.colors(5)) 
+
+```
+
+```{r median-household-income-tract, fig.cap = "Median Household Income by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+sdohtract %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_median_hh_inc),
+    color = "white") +
+  #geom_sf_text(
+    #aes(
+      #label = county
+      #),
+    #color = "black",
+    #size = 2.75
+    #) + 
+  geom_sf(
+    data = sf::st_union(appmaptract), 
+    color = "#FA4616", size = 3, alpha = 0
+    ) +   
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "bottom") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  labs(fill = "Dollars")
+#  scale_fill_gradientn(colours = terrain.colors(5)) 
+
+```
+
+## SDOH Variables Available at the Census Tract Level
+
+| Variable Name                | Description                                                                                                           |
+|:----------------|:------------------------------------------------------|
+| ACS_PCT_CHILD_DISAB          | Percentage of children with a disability (ages 17 and below)                                                          |
+| ACS_PCT_DISABLE              | Percentage of population with a disability                                                                            |
+| ACS_PCT_HH_NO_INTERNET       | ACS_PCT_HH_NO_INTERNET                                                                                                |
+| ACS_PCT_HH_NO_COMP_DEV       | ACS_PCT_HH_NO_COMP_DEV                                                                                                |
+| ACS_PCT_EMPLOYED             | Percentage of civilian labor force that is employed (ages 16 and over)                                                |
+| ACS_PCT_NOT_LABOR            | Percentage of population not in labor force (ages 16 and over)                                                        |
+| ACS_MEDIAN_HH_INC            | Median household income (dollars, inflation-adjusted to data file year)                                               |
+| ACS_PCT_NONVET_POV_18_64     | Percentage of civilian nonveterans with income below the poverty level in the past 12 months (between ages 18 and 64) |
+| ACS_PCT_PERSON_INC_BELOW99   | Percentage of population with an income to poverty ratio under 1.00                                                   |
+| ACS_PCT_INC50                | Percentage of population with income to poverty ratio under 0.50                                                      |
+| ACS_PCT_LT_HS                | Percentage of population with less than high school education (ages 25 and over)                                      |
+| ACS_PCT_HU_MOBILE_HOME       | Percentage of housing units that are mobile homes                                                                     |
+| ACS_PCT_OWNER_HU_COST_50PCT  | Percentage of owner-occupied housing units with rent equal to 50 percent or more of household income                                                                                           |
+| ACS_PCT_RENTER_HU_COST_50PCT | Percentage of renter-occupied housing units with rent equal to 50 percent or more of household income                 |
+| ACS_PCT_WORK_NO_CAR          | Percentage of workers in households with no vehicle available (ages 16 and over)                                      |
+| ACS_PCT_UNINSURED_BELOW64    | Percentage of population with no health insurance (ages 64 and below)                                                 |
+| POS_DIST_CLINIC_TRACT        | Distance in miles to the nearest health clinic (FQHC, RHC), calculated using population weighted tract centroids      |
+
+No chronic health data available
