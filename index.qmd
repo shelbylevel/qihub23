@@ -334,3 +334,52 @@ sdohtract %>%
 | POS_DIST_CLINIC_TRACT        | Distance in miles to the nearest health clinic (FQHC, RHC), calculated using population weighted tract centroids      |
 
 No chronic health data available
+
+# PLACES Data
+
+```{r readin-places-data}
+
+library(tidyverse)
+
+url0 = "https://data.cdc.gov/api/views/swc5-untb/rows.csv?accessType=DOWNLOAD"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+read.csv(
+  destfile
+  ) %>%
+  janitor::clean_names() %>%
+  filter(
+    state_abbr == 'OH',
+    year == 2021,
+    data_value_type == 'Age-adjusted prevalence'
+  ) -> places_cty
+
+
+url0 = "https://data.cdc.gov/api/views/qnzd-25i4/rows.csv?accessType=DOWNLOAD"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+read.csv(
+  destfile
+  ) %>%
+  janitor::clean_names() %>%
+  filter(
+    #between(location_name, 3899, 4000),
+    year == 2021
+    #data_value_type == 'Age-adjusted prevalence'
+  ) -> places_zip
+
+
+url0 = "https://data.cdc.gov/api/views/cwsq-ngmh/rows.csv?accessType=DOWNLOAD"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+read.csv(
+  destfile
+  ) %>%
+  janitor::clean_names() %>%
+  filter(
+    #state_abbr == 'OH',
+    year == 2021
+    #data_value_type == 'Age-adjusted prevalence'
+  ) -> places_tract
+```
+
