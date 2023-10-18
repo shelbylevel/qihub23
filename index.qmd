@@ -4,7 +4,6 @@ format: html
 editor: visual
 
 self-contained: true
-
 ---
 
 ```{r setup, include=FALSE}
@@ -17,7 +16,7 @@ The Social Determinants of Health (SDOH) database from AHRQ compiles SDOH-relate
 
 These variables are organized into five main categories containing several topics each: social context (demographics, disability, immigration, living conditions), economic context (employment, income, poverty), education (attainment), physical infrastructure (environment, housing, internet, migration, transportation), and healthcare context (characteristics of facilities, characteristics of providers, distance to provider, health insurance status, health outcomes, health care quality, utilization and costs).
 
-```{r readin-2020-data, include=FALSE}
+```{r readin-2020-data, include=FALSE, cache=TRUE}
 library(tidyverse)
 library(readxl)
 
@@ -33,7 +32,7 @@ readxl::read_excel(
     ) %>%
   mutate(
     name = stringr::str_remove_all(county, " County")
-  ) -> county
+  ) -> sdoh_county
 
 url0 = "https://www.ahrq.gov/sites/default/files/wysiwyg/sdoh/SDOH_2020_ZIPCODE_1_0.xlsx"
 destfile <- tempfile()
@@ -44,7 +43,10 @@ readxl::read_excel(
   janitor::clean_names() %>%
   filter(
     statefips == 39
-    ) -> zip
+    ) %>%
+  mutate(
+    zcta = as.numeric(zcta)
+    ) -> sdoh_zip
 
 url0 = "https://www.ahrq.gov/downloads/sdoh/sdoh_2020_tract_1_0.xlsx"
 destfile <- tempfile()
@@ -55,7 +57,10 @@ readxl::read_excel(
   janitor::clean_names() %>%
   filter(
     statefips == 39
-    ) -> tract
+    ) %>%
+  mutate(
+    tractfips = as.numeric(tractfips)
+    ) -> sdoh_tract
 
 ```
 
@@ -73,90 +78,98 @@ c(
 
 ```
 
-```{r acs-download, include = FALSE}
-library(tidycensus)
+```{r ,include=FALSE}
+library(tigris)
 
-get_acs(
-  geography = "tract",
-  state = "OH",
-  variables = "B01003_001",
-  year = 2021,
-  geometry = TRUE
-  ) %>%
-  mutate(
-    name2 = stringr::str_remove_all(NAME, " County, Ohio"),
-    name2 = stringr::str_remove_all(name2, "Census Tract ")
-    ) %>%
-  separate(
-    name2, 
-    into = c("tractnum", "county"),
-    sep = ", ",
-    remove = TRUE
-    ) %>%
-  mutate(
-    appalachian = ifelse(
-      county %in% appalachian.ohio, 
-      "Appalachian", 
-      "Not Appalachian"
-      )
-    ) -> df_tract
+counties(
+  state = 'OH',
+  cb = TRUE,  #clip boundaries
+  year = 2020
+) -> tigcounties
 
-get_acs(
-  geography = "zip code tabulation area",
-  variables = "B01003_001",
-  year = 2021,
-  geometry = TRUE
-  ) %>%
-  mutate(
-    county = stringr::str_remove_all(NAME, " County, Ohio"),
-    appalachian = ifelse(county %in% appalachian.ohio, "Appalachian", "Not Appalachian")
-    ) -> df_zip
+zctas(
+  cb = TRUE,
+  year = 2020
+) -> tigzctas
 
-df_zip %>%
+tracts(
+  state = 'OH',
+  cb = TRUE,
+  year = 2020
+) -> tigtracts
+
+```
+
+```{r county-merge}
+
+# need to start with geometry df in order to keep geometry data
+
+tigcounties %>%
+  left_join(
+    sdoh_county,
+    by = c('GEOID' = 'countyfips')
+  ) -> county_df
+
+```
+
+```{r zcta-merge}
+
+sdoh_zip %>%
+  mutate(
+    ZCTA5CE20 = as.character(zcta)
+  ) -> sdoh_zip
+
+# using inner join to filter by OH
+tigzctas %>%
   inner_join(
-    zip,
-    by = c("GEOID" = "zcta")
-             ) -> sdohzip
+    sdoh_zip,
+    by = 'ZCTA5CE20'
+  ) -> zcta_df
 
-get_acs(
-  geography = "county",
-  state = "OH",
-  variables = "B01003_001",
-  year = 2021,
-  geometry = TRUE
-  ) %>%
+```
+
+```{r tract-merge}
+
+sdoh_tract %>%
   mutate(
-    county = stringr::str_remove_all(NAME, " County, Ohio"),
-    appalachian = ifelse(county %in% appalachian.ohio, "Appalachian", "Not Appalachian")
-    ) -> df_county
+    GEOID = as.character(tractfips)
+  ) -> sdoh_tract
 
+tigtracts %>%
+  left_join(
+    sdoh_tract,
+    by = 'GEOID'
+  ) -> tract_df
+
+```
+
+```{r eval=FALSE}
 df_tract %>%
   filter(appalachian == "Appalachian") -> appmaptract
 
 df_county %>%
   filter(appalachian == "Appalachian") -> appmapcounty
-
 ```
 
 ```{r county-pop-map, fig.cap = "Figure 1: Ohio's Appalachian and Non-Appalachian Counties", fig.height = 9, fig.width = 9, include = TRUE}
 
-df_county %>%
+county_df %>%
   ggplot() +
   geom_sf(
-    aes(fill = estimate),
+    aes(fill = acs_tot_pop_wt),
     color = "grey75"
     ) +
   geom_sf_text(
     aes(
-      label = county
+      label = NAME
       ),
     color = "black",
     size = 2.75
     ) + 
-  geom_sf(
-    data = sf::st_union(appmapcounty), 
-    color = "#FA4616", size = 3, alpha = 0
-    ) +   
+  #geom_sf(
+    #data = sf::st_union(appmapcounty), 
+    #color = "#FA4616", size = 3, alpha = 0
+   # ) +   
   coord_sf(crs = 4326) +
   ggthemes::theme_map() +
   theme(legend.position = "right") +
@@ -166,7 +179,59 @@ df_county %>%
     )
 ```
 
-```{r athens-tract-pop-map, include = TRUE, fig.cap = "Athens County Population by Census Tract"}
+```{r}
+
+zcta_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_tot_pop_wt_zc),
+    color = "grey75"
+    ) 
+
+```
+
+```{r}
+
+tract_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_tot_pop_wt),
+    color = "grey75"
+    ) 
+```
+
+```{r}
+
+zcta_df %>%
+  mutate(
+    zipcode_num = as.integer(zipcode)
+  ) %>%
+  filter(
+    zipcode_num %in% c(45710, 45711, 45701, 45716, 45719, 43728, 45723, 45732, 45735, 45740, 45742, 45761, 45764, 45766, 45776, 45778, 45780, 45782)
+  ) %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = zipcode),
+    color = "grey75"
+    ) 
+
+```
+
+```{r}
+
+tract_df %>%
+  filter(
+    COUNTYFP == '009'
+  ) %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_tot_pop_wt),
+    color = "grey75"
+    ) 
+
+```
+
+```{r athens-tract-pop-map, include = TRUE, fig.cap = "Athens County Population by Census Tract", eval=FALSE}
 
 df_tract %>%
   filter(
@@ -191,7 +256,7 @@ df_tract %>%
 #  scale_fill_gradientn(colours = terrain.colors(5)) 
 ```
 
-```{r app-tract-pop-map, include = TRUE, fig.cap = "Appalachia Population by Census Tract"}
+```{r app-tract-pop-map, include = TRUE, fig.cap = "Appalachia Population by Census Tract", eval=FALSE}
 
 df_tract %>%
   filter(
@@ -217,44 +282,45 @@ df_tract %>%
 
 ```
 
-```{r add-geometry-to-sdoh-data, include = FALSE}
+```{r add-geometry-to-sdoh-data, include = FALSE, eval=FALSE}
 df_county %>%
   inner_join(
-    county,
+    sdoh_county,
     by = c("GEOID" = "countyfips")
   ) -> sdohcounty
 
-df_zip %>%
+sdoh_zip %>%
   inner_join(
-    zip,
-    by = c("GEOID" = "zcta")
-  ) -> sdohzip
+    df_zip,
+    by = c("zcta" = "zcta"),
+    relationship = 'many-to-many'
+             ) -> sdohzip
 
 df_tract %>%
   inner_join(
-    tract,
+    sdoh_tract,
     by = c("GEOID" = "tractfips")
   ) -> sdohtract
 ```
 
-```{r median-household-income-county, fig.cap = "Median Household Income by County", fig.height = 9, fig.width = 9, include = TRUE}
+```{r median-household-income-county, fig.cap = "Median Household Income by County", fig.height = 9, fig.width = 9, include = TRUE, eval=FALSE}
 
-sdohcounty %>%
+county_df %>%
   ggplot() +
   geom_sf(
     aes(fill = acs_median_hh_inc),
     color = "white") +
   geom_sf_text(
     aes(
-      label = county.x
+      label = NAME
       ),
     color = "black",
     size = 2.75
     ) + 
-  geom_sf(
-    data = sf::st_union(appmapcounty), 
-    color = "#FA4616", size = 3, alpha = 0
-    ) +   
+  #geom_sf(
+    #data = sf::st_union(appmapcounty), 
+    #color = "#FA4616", size = 3, alpha = 0
+    #) +   
   coord_sf(crs = 4326) +
   ggthemes::theme_map() +
   theme(legend.position = "bottom") +
@@ -264,9 +330,9 @@ sdohcounty %>%
 
 ```
 
-```{r median-household-income-zipcode, fig.cap = "Median Household Income by Zip Code", fig.height = 9, fig.width = 9, include = TRUE}
+```{r median-household-income-zipcode, fig.cap = "Median Household Income by Zip Code", fig.height = 9, fig.width = 9, include = TRUE, eval=FALSE}
 
-sdohzip %>%
+zcta_df %>%
   ggplot() +
   geom_sf(
     aes(fill = acs_median_hh_inc_zc),
@@ -284,20 +350,13 @@ sdohzip %>%
 
 ```
 
-```{r median-household-income-tract, fig.cap = "Median Household Income by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+```{r median-household-income-tract, fig.cap = "Median Household Income by Census Tract", fig.height = 9, fig.width = 9, include = TRUE, eval=FALSE}
 
-sdohtract %>%
+tract_df %>%
   ggplot() +
   geom_sf(
     aes(fill = acs_median_hh_inc),
     color = "white") +
-  #geom_sf_text(
-    #aes(
-      #label = county
-      #),
-    #color = "black",
-    #size = 2.75
-    #) + 
   geom_sf(
     data = sf::st_union(appmaptract), 
     color = "#FA4616", size = 3, alpha = 0
@@ -314,7 +373,7 @@ sdohtract %>%
 ## SDOH Variables Available at the Census Tract Level
 
 | Variable Name                | Description                                                                                                           |
-|:----------------|:------------------------------------------------------|
+|:-----------------|:-----------------------------------------------------|
 | ACS_PCT_CHILD_DISAB          | Percentage of children with a disability (ages 17 and below)                                                          |
 | ACS_PCT_DISABLE              | Percentage of population with a disability                                                                            |
 | ACS_PCT_HH_NO_INTERNET       | ACS_PCT_HH_NO_INTERNET                                                                                                |
@@ -327,7 +386,7 @@ sdohtract %>%
 | ACS_PCT_INC50                | Percentage of population with income to poverty ratio under 0.50                                                      |
 | ACS_PCT_LT_HS                | Percentage of population with less than high school education (ages 25 and over)                                      |
 | ACS_PCT_HU_MOBILE_HOME       | Percentage of housing units that are mobile homes                                                                     |
-| ACS_PCT_OWNER_HU_COST_50PCT  | Percentage of owner-occupied housing units with rent equal to 50 percent or more of household income                                                                                           |
+| ACS_PCT_OWNER_HU_COST_50PCT  | Percentage of owner-occupied housing units with rent equal to 50 percent or more of household income                  |
 | ACS_PCT_RENTER_HU_COST_50PCT | Percentage of renter-occupied housing units with rent equal to 50 percent or more of household income                 |
 | ACS_PCT_WORK_NO_CAR          | Percentage of workers in households with no vehicle available (ages 16 and over)                                      |
 | ACS_PCT_UNINSURED_BELOW64    | Percentage of population with no health insurance (ages 64 and below)                                                 |
@@ -337,7 +396,7 @@ No chronic health data available
 
 # PLACES Data
 
-```{r readin-places-data}
+```{r readin-places-data, include=FALSE, cache=TRUE, eval=FALSE}
 
 library(tidyverse)
 
@@ -352,34 +411,62 @@ read.csv(
     state_abbr == 'OH',
     year == 2021,
     data_value_type == 'Age-adjusted prevalence'
-  ) -> places_cty
+  ) -> places_county
 
 
-url0 = "https://data.cdc.gov/api/views/qnzd-25i4/rows.csv?accessType=DOWNLOAD"
-destfile <- tempfile()
-download.file(url0, destfile, mode = 'wb')
-read.csv(
-  destfile
-  ) %>%
+#url0 = "https://data.cdc.gov/api/views/qnzd-25i4/rows.csv?accessType=DOWNLOAD"
+#destfile <- tempfile()
+#download.file(url0, destfile, mode = 'wb')
+read.csv(here::here(
+  'data',
+  'PLACES_zip_2023.csv'
+  )) %>% 
+  #destfile
+  #) %>%
   janitor::clean_names() %>%
   filter(
-    #between(location_name, 3899, 4000),
     year == 2021
     #data_value_type == 'Age-adjusted prevalence'
   ) -> places_zip
 
 
-url0 = "https://data.cdc.gov/api/views/cwsq-ngmh/rows.csv?accessType=DOWNLOAD"
-destfile <- tempfile()
-download.file(url0, destfile, mode = 'wb')
-read.csv(
-  destfile
-  ) %>%
+#url0 = "https://data.cdc.gov/api/views/cwsq-ngmh/rows.csv?accessType=DOWNLOAD"
+#destfile <- tempfile()
+#download.file(url0, destfile, mode = 'wb')
+read.csv(here::here(
+  'data',
+  'PLACES_tract_2023.csv'
+  )) %>% 
+  #destfile
+  #) %>%
   janitor::clean_names() %>%
   filter(
-    #state_abbr == 'OH',
+    state_abbr == 'OH',
     year == 2021
     #data_value_type == 'Age-adjusted prevalence'
   ) -> places_tract
 ```
 
+```{r add-geometry-to-places-data, include=FALSE, eval=FALSE}
+
+places_county %>%
+   inner_join(
+    df_county,
+    by = c("location_name" = "county"),
+    relationship = 'many-to-many'
+             ) -> placescounty
+
+df_zip %>%
+  inner_join(
+    places_zip,
+    by = c("zcta" = "location_name"),
+    relationship = 'many-to-many'
+             ) -> placeszip
+
+places_tract %>%
+   inner_join(
+    df_tract,
+    by = c("location_name" = "GEOID"),
+    relationship = 'many-to-many'
+             ) -> placestract
+```
