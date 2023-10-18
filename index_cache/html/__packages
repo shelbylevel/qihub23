@@ -9,5 +9,4 @@ stringr
 forcats
 lubridate
 readxl
-tidycensus
 tigris
