@@ -16,8 +16,12 @@ The Social Determinants of Health (SDOH) database from AHRQ compiles SDOH-relate
 
 These variables are organized into five main categories containing several topics each: social context (demographics, disability, immigration, living conditions), economic context (employment, income, poverty), education (attainment), physical infrastructure (environment, housing, internet, migration, transportation), and healthcare context (characteristics of facilities, characteristics of providers, distance to provider, health insurance status, health outcomes, health care quality, utilization and costs).
 
-```{r readin-2020-data, include=FALSE, cache=TRUE}
+```{r packages}
 library(tidyverse)
+```
+
+
+```{r readin-2020-data, include=FALSE, cache=TRUE}
 library(readxl)
 
 url0 = "https://www.ahrq.gov/sites/default/files/wysiwyg/sdoh/SDOH_2020_COUNTY_1_0.xlsx"
@@ -29,10 +33,7 @@ readxl::read_excel(
   janitor::clean_names() %>%
   filter(
     statefips == 39
-    ) %>%
-  mutate(
-    name = stringr::str_remove_all(county, " County")
-  ) -> sdoh_county
+    ) -> sdoh_county
 
 url0 = "https://www.ahrq.gov/sites/default/files/wysiwyg/sdoh/SDOH_2020_ZIPCODE_1_0.xlsx"
 destfile <- tempfile()
@@ -43,9 +44,6 @@ readxl::read_excel(
   janitor::clean_names() %>%
   filter(
     statefips == 39
-    ) %>%
-  mutate(
-    zcta = as.numeric(zcta)
     ) -> sdoh_zip
 
 url0 = "https://www.ahrq.gov/downloads/sdoh/sdoh_2020_tract_1_0.xlsx"
@@ -57,9 +55,6 @@ readxl::read_excel(
   janitor::clean_names() %>%
   filter(
     statefips == 39
-    ) %>%
-  mutate(
-    tractfips = as.numeric(tractfips)
     ) -> sdoh_tract
 
 ```
@@ -78,7 +73,7 @@ c(
 
 ```
 
-```{r ,include=FALSE}
+```{r pull-geometry-data,include=FALSE}
 library(tigris)
 
 counties(
@@ -93,14 +88,52 @@ zctas(
 ) -> tigzctas
 
 tracts(
-  state = 'OH',
   cb = TRUE,
   year = 2020
 ) -> tigtracts
 
 ```
 
-```{r county-merge}
+```{r app-map-outline}
+
+tigcounties %>% 
+  mutate(
+    appalachian = ifelse(
+      NAME %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+  ) %>% 
+  filter(appalachian == "Appalachian") -> appmapcounty
+
+tigtracts %>%
+  filter(
+    STATEFP == 39
+  ) %>%
+  mutate(
+    county = stringr::str_remove_all(NAMELSADCO, " County"),
+    appalachian = ifelse(
+      county %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+  ) %>% 
+  filter(
+    appalachian == "Appalachian"
+    ) -> appmaptract
+
+```
+
+```{r athens-co-outline}
+
+tigcounties %>%
+  filter(
+    NAME == 'Athens'
+  ) -> athensmap
+  
+```
+
+```{r merge-sdoh-geometry}
 
 # need to start with geometry df in order to keep geometry data
 
@@ -108,47 +141,37 @@ tigcounties %>%
   left_join(
     sdoh_county,
     by = c('GEOID' = 'countyfips')
-  ) -> county_df
-
-```
-
-```{r zcta-merge}
-
-sdoh_zip %>%
+  ) %>%
   mutate(
-    ZCTA5CE20 = as.character(zcta)
-  ) -> sdoh_zip
+    appalachian = ifelse(
+      NAME %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+    ) -> county_df
 
 # using inner join to filter by OH
 tigzctas %>%
   inner_join(
     sdoh_zip,
-    by = 'ZCTA5CE20'
+    by = c('ZCTA5CE20' = 'zcta')
   ) -> zcta_df
 
-```
-
-```{r tract-merge}
-
-sdoh_tract %>%
-  mutate(
-    GEOID = as.character(tractfips)
-  ) -> sdoh_tract
-
+# right join to not lose any from sdoh df
 tigtracts %>%
-  left_join(
+  right_join(
     sdoh_tract,
-    by = 'GEOID'
+    by = c('GEOID' = 'tractfips')
+  ) %>%
+  mutate(
+    county = stringr::str_remove_all(NAMELSADCO, " County"),
+    appalachian = ifelse(
+      county %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
   ) -> tract_df
 
-```
-
-```{r eval=FALSE}
-df_tract %>%
-  filter(appalachian == "Appalachian") -> appmaptract
-
-df_county %>%
-  filter(appalachian == "Appalachian") -> appmapcounty
 ```
 
 ```{r county-pop-map, fig.cap = "Figure 1: Ohio's Appalachian and Non-Appalachian Counties", fig.height = 9, fig.width = 9, include = TRUE}
@@ -166,10 +189,10 @@ county_df %>%
     color = "black",
     size = 2.75
     ) + 
-  #geom_sf(
-    #data = sf::st_union(appmapcounty), 
-    #color = "#FA4616", size = 3, alpha = 0
-   # ) +   
+  geom_sf(
+    data = sf::st_union(appmapcounty), 
+    color = "#FA4616", size = 3, alpha = 0
+    ) +   
   coord_sf(crs = 4326) +
   ggthemes::theme_map() +
   theme(legend.position = "right") +
@@ -177,47 +200,45 @@ county_df %>%
   labs(
     fill = 'Total Population'
     )
-```
-
-```{r}
-
-zcta_df %>%
-  ggplot() +
-  geom_sf(
-    aes(fill = acs_tot_pop_wt_zc),
-    color = "grey75"
-    ) 
 
 ```
 
-```{r}
-
-tract_df %>%
-  ggplot() +
-  geom_sf(
-    aes(fill = acs_tot_pop_wt),
-    color = "grey75"
-    ) 
-```
-
-```{r}
+```{r athens-zcta-pop-map, fig.cap = "Figure 2: Athens County Zip Codes", fig.height = 9, fig.width = 9, include = TRUE}
 
 zcta_df %>%
   mutate(
     zipcode_num = as.integer(zipcode)
   ) %>%
   filter(
-    zipcode_num %in% c(45710, 45711, 45701, 45716, 45719, 43728, 45723, 45732, 45735, 45740, 45742, 45761, 45764, 45766, 45776, 45778, 45780, 45782)
+    zipcode_num %in% c(45701, 45710, 45711, 45716, 45719, 43728, 45723, 45732, 45735, 45740, 45742, 45761, 45764, 45766, 45776, 45778, 45780, 45782)
   ) %>%
   ggplot() +
   geom_sf(
-    aes(fill = zipcode),
+    aes(fill = acs_tot_pop_wt_zc),
     color = "grey75"
-    ) 
+    ) +
+  geom_sf_text(
+    aes(
+      label = NAME20
+      ),
+    color = "black",
+    size = 2.75
+    ) + 
+  geom_sf(
+    data = athensmap, 
+    color = "#FA4616", size = 3, alpha = 0
+    ) +   
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Total Population'
+    )
 
 ```
 
-```{r}
+```{r athens-tract-pop-map, fig.cap = "Figure 3: Athens County Census Tracts", fig.height = 9, fig.width = 9, include = TRUE}
 
 tract_df %>%
   filter(
@@ -227,83 +248,18 @@ tract_df %>%
   geom_sf(
     aes(fill = acs_tot_pop_wt),
     color = "grey75"
-    ) 
-
-```
-
-```{r athens-tract-pop-map, include = TRUE, fig.cap = "Athens County Population by Census Tract", eval=FALSE}
-
-df_tract %>%
-  filter(
-    county == 'Athens'
-  ) %>%
-  ggplot() +
-  geom_sf(
-    aes(fill = estimate),
-    color = "grey") +
-  #geom_sf_text(
-    #aes(
-      #label = county
-      #),
-    #color = "black",
-    #size = 2.75
-    #) + 
+    ) + 
   coord_sf(crs = 4326) +
   ggthemes::theme_map() +
-  theme(legend.position = "bottom") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
-  labs(fill = "Dollars")
-#  scale_fill_gradientn(colours = terrain.colors(5)) 
-```
-
-```{r app-tract-pop-map, include = TRUE, fig.cap = "Appalachia Population by Census Tract", eval=FALSE}
-
-df_tract %>%
-  filter(
-    appalachian == 'Appalachian'
-  ) %>%
-  ggplot() +
-  geom_sf(
-    aes(fill = estimate),
-    color = "grey") +
-  #geom_sf_text(
-    #aes(
-      #label = county
-      #),
-    #color = "black",
-    #size = 2.75
-    #) + 
-  coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "bottom") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
-  labs(fill = "Dollars")
-#  scale_fill_gradientn(colours = terrain.colors(5)) 
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Total Population'
+    )
 
 ```
 
-```{r add-geometry-to-sdoh-data, include = FALSE, eval=FALSE}
-df_county %>%
-  inner_join(
-    sdoh_county,
-    by = c("GEOID" = "countyfips")
-  ) -> sdohcounty
-
-sdoh_zip %>%
-  inner_join(
-    df_zip,
-    by = c("zcta" = "zcta"),
-    relationship = 'many-to-many'
-             ) -> sdohzip
-
-df_tract %>%
-  inner_join(
-    sdoh_tract,
-    by = c("GEOID" = "tractfips")
-  ) -> sdohtract
-```
-
-```{r median-household-income-county, fig.cap = "Median Household Income by County", fig.height = 9, fig.width = 9, include = TRUE, eval=FALSE}
+```{r median-household-income-county, fig.cap = "Median Household Income by County", fig.height = 9, fig.width = 9, include = TRUE}
 
 county_df %>%
   ggplot() +
@@ -317,10 +273,10 @@ county_df %>%
     color = "black",
     size = 2.75
     ) + 
-  #geom_sf(
-    #data = sf::st_union(appmapcounty), 
-    #color = "#FA4616", size = 3, alpha = 0
-    #) +   
+  geom_sf(
+    data = sf::st_union(appmapcounty), 
+    color = "#FA4616", size = 3, alpha = 0
+    ) +   
   coord_sf(crs = 4326) +
   ggthemes::theme_map() +
   theme(legend.position = "bottom") +
@@ -330,7 +286,7 @@ county_df %>%
 
 ```
 
-```{r median-household-income-zipcode, fig.cap = "Median Household Income by Zip Code", fig.height = 9, fig.width = 9, include = TRUE, eval=FALSE}
+```{r median-household-income-zipcode, fig.cap = "Median Household Income by Zip Code", fig.height = 9, fig.width = 9, include = TRUE}
 
 zcta_df %>%
   ggplot() +
@@ -350,7 +306,7 @@ zcta_df %>%
 
 ```
 
-```{r median-household-income-tract, fig.cap = "Median Household Income by Census Tract", fig.height = 9, fig.width = 9, include = TRUE, eval=FALSE}
+```{r median-household-income-tract, fig.cap = "Median Household Income by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
 
 tract_df %>%
   ggplot() +
@@ -470,3 +426,124 @@ places_tract %>%
     relationship = 'many-to-many'
              ) -> placestract
 ```
+
+# CHR Data
+
+```{r readin-chr-data}
+
+url0 = "https://www.countyhealthrankings.org/sites/default/files/media/document/2023%20County%20Health%20Rankings%20Ohio%20Data%20-%20v3.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+read_xlsx(
+  destfile, sheet = 4, skip = 1
+  ) %>%
+  janitor::clean_names() -> chr_ranked
+
+url0 = "https://www.countyhealthrankings.org/sites/default/files/media/document/2023%20County%20Health%20Rankings%20Ohio%20Data%20-%20v3.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+read_xlsx(
+  destfile, sheet = 5, skip = 1
+  ) %>%
+  janitor::clean_names() -> chr_unranked
+
+```
+
+```{r add-geometry-to-chr}
+
+tigcounties %>%
+  left_join(
+    chr_unranked,
+    by = c('GEOID' = 'fips')
+  ) %>%
+  mutate(
+    appalachian = ifelse(
+      NAME %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+    ) -> unranked_df
+
+tigcounties %>%
+  left_join(
+    chr_ranked,
+    by = c('GEOID' = 'fips')
+  ) %>%
+  mutate(
+    appalachian = ifelse(
+      NAME %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+    ) -> ranked_df
+
+```
+
+```{r county-diabetes, fig.cap = "Percent of Adults with Diabetes", fig.height = 9, fig.width = 9, include = TRUE}
+
+unranked_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = percent_adults_with_diabetes)) +
+  geom_sf_text(
+    aes(
+      label = county
+      ),
+    color = "black",
+    size = 2.75
+    ) + 
+  geom_sf(
+    data = sf::st_union(appmapcounty), 
+    color = "#FA4616", size = 3, alpha = 0
+    ) +   
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "bottom") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  labs(fill = "Percent")
+
+```
+
+```{r appalachia-diabetes, fig.cap = "Percent of Adults with Diabetes", fig.height = 9, fig.width = 9, include = TRUE}
+
+unranked_df %>%
+  filter(
+    appalachian == 'Appalachian'
+  ) %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = percent_adults_with_diabetes)) +
+  geom_sf_text(
+    aes(
+      label = county
+      ),
+    color = "black",
+    size = 2.75
+    ) + 
+  geom_sf(
+    data = sf::st_union(appmapcounty), 
+    color = "#FA4616", size = 3, alpha = 0
+    ) +   
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "bottom") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  labs(fill = "Percent")
+
+```
+
+```{r}
+
+unranked_df %>%
+  ggplot() +
+  geom_point(
+    aes(
+      x = 
+    )
+  )
+
+aes(color = fill =SDOH metric)
+
+size_measure = (size of points)
+```
+
