@@ -1,9 +1,14 @@
 ---
-title: "index"
-format: html
-editor: visual
+title: "Social Determinants of Health in Ohio"
+author: 'Shelby Level'
+format: 
+  html:
+    toc: true
+    toc-depth: 2
+    toc-location: left
+    self-contained: true
+    css: css/style.css
 
-self-contained: true
 ---
 
 ```{r setup, include=FALSE}
@@ -350,6 +355,22 @@ tract_df %>%
 
 No chronic health data available
 
+
+```{r}
+
+readxl::read_excel(
+  'SDOH_2020_Codebook_1_0.xlsx', sheet = 4
+) %>%
+  select(
+    1:5
+  ) %>%
+  DT::datatable(
+    rownames = FALSE
+  )
+  
+```
+
+
 # PLACES Data
 
 ```{r readin-places-data, include=FALSE, cache=TRUE, eval=FALSE}
@@ -434,7 +455,7 @@ places_tract %>%
 url0 = "https://www.countyhealthrankings.org/sites/default/files/media/document/2023%20County%20Health%20Rankings%20Ohio%20Data%20-%20v3.xlsx"
 destfile <- tempfile()
 download.file(url0, destfile, mode = 'wb')
-read_xlsx(
+readxl::read_excel(
   destfile, sheet = 4, skip = 1
   ) %>%
   janitor::clean_names() -> chr_ranked
@@ -442,7 +463,7 @@ read_xlsx(
 url0 = "https://www.countyhealthrankings.org/sites/default/files/media/document/2023%20County%20Health%20Rankings%20Ohio%20Data%20-%20v3.xlsx"
 destfile <- tempfile()
 download.file(url0, destfile, mode = 'wb')
-read_xlsx(
+readxl::read_excel(
   destfile, sheet = 5, skip = 1
   ) %>%
   janitor::clean_names() -> chr_unranked
@@ -500,7 +521,8 @@ unranked_df %>%
   ggthemes::theme_map() +
   theme(legend.position = "bottom") +
   scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
-  labs(fill = "Percent")
+  labs(fill = "Percent",
+       caption = "Source: County Health Rankings (2020)")
 
 ```
 
@@ -532,7 +554,7 @@ unranked_df %>%
 
 ```
 
-```{r}
+```{r , eval=FALSE}
 
 unranked_df %>%
   ggplot() +
