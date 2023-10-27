@@ -333,29 +333,6 @@ tract_df %>%
 
 ## SDOH Variables Available at the Census Tract Level
 
-| Variable Name                | Description                                                                                                           |
-|:-----------------|:-----------------------------------------------------|
-| ACS_PCT_CHILD_DISAB          | Percentage of children with a disability (ages 17 and below)                                                          |
-| ACS_PCT_DISABLE              | Percentage of population with a disability                                                                            |
-| ACS_PCT_HH_NO_INTERNET       | ACS_PCT_HH_NO_INTERNET                                                                                                |
-| ACS_PCT_HH_NO_COMP_DEV       | ACS_PCT_HH_NO_COMP_DEV                                                                                                |
-| ACS_PCT_EMPLOYED             | Percentage of civilian labor force that is employed (ages 16 and over)                                                |
-| ACS_PCT_NOT_LABOR            | Percentage of population not in labor force (ages 16 and over)                                                        |
-| ACS_MEDIAN_HH_INC            | Median household income (dollars, inflation-adjusted to data file year)                                               |
-| ACS_PCT_NONVET_POV_18_64     | Percentage of civilian nonveterans with income below the poverty level in the past 12 months (between ages 18 and 64) |
-| ACS_PCT_PERSON_INC_BELOW99   | Percentage of population with an income to poverty ratio under 1.00                                                   |
-| ACS_PCT_INC50                | Percentage of population with income to poverty ratio under 0.50                                                      |
-| ACS_PCT_LT_HS                | Percentage of population with less than high school education (ages 25 and over)                                      |
-| ACS_PCT_HU_MOBILE_HOME       | Percentage of housing units that are mobile homes                                                                     |
-| ACS_PCT_OWNER_HU_COST_50PCT  | Percentage of owner-occupied housing units with rent equal to 50 percent or more of household income                  |
-| ACS_PCT_RENTER_HU_COST_50PCT | Percentage of renter-occupied housing units with rent equal to 50 percent or more of household income                 |
-| ACS_PCT_WORK_NO_CAR          | Percentage of workers in households with no vehicle available (ages 16 and over)                                      |
-| ACS_PCT_UNINSURED_BELOW64    | Percentage of population with no health insurance (ages 64 and below)                                                 |
-| POS_DIST_CLINIC_TRACT        | Distance in miles to the nearest health clinic (FQHC, RHC), calculated using population weighted tract centroids      |
-
-No chronic health data available
-
-
 ```{r}
 
 readxl::read_excel(
@@ -367,7 +344,7 @@ readxl::read_excel(
   DT::datatable(
     rownames = FALSE
   )
-  
+
 ```
 
 
@@ -470,20 +447,19 @@ readxl::read_excel(
 
 ```
 
-```{r add-geometry-to-chr}
+```{r merge-sdoh-chr}
 
-tigcounties %>%
+county_df %>%
   left_join(
     chr_unranked,
     by = c('GEOID' = 'fips')
-  ) %>%
-  mutate(
-    appalachian = ifelse(
-      NAME %in% appalachian.ohio, 
-      "Appalachian", 
-      "Not Appalachian"
-      )
-    ) -> unranked_df
+  ) -> county_sdoh_chr
+
+county_sdoh_chr %>%
+  left_join(
+    chr_ranked,
+    by = c('GEOID' = 'fips')
+  ) -> county_sdoh_chr
 
 tigcounties %>%
   left_join(
@@ -502,7 +478,7 @@ tigcounties %>%
 
 ```{r county-diabetes, fig.cap = "Percent of Adults with Diabetes", fig.height = 9, fig.width = 9, include = TRUE}
 
-unranked_df %>%
+county_sdoh_chr %>%
   ggplot() +
   geom_sf(
     aes(fill = percent_adults_with_diabetes)) +
@@ -526,46 +502,416 @@ unranked_df %>%
 
 ```
 
-```{r appalachia-diabetes, fig.cap = "Percent of Adults with Diabetes", fig.height = 9, fig.width = 9, include = TRUE}
+```{r income-diabetes}
 
-unranked_df %>%
-  filter(
-    appalachian == 'Appalachian'
-  ) %>%
-  ggplot() +
-  geom_sf(
-    aes(fill = percent_adults_with_diabetes)) +
-  geom_sf_text(
+county_sdoh_chr %>%
+  ggplot(
     aes(
-      label = county
-      ),
-    color = "black",
-    size = 2.75
-    ) + 
-  geom_sf(
-    data = sf::st_union(appmapcounty), 
-    color = "#FA4616", size = 3, alpha = 0
-    ) +   
-  coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "bottom") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
-  labs(fill = "Percent")
-
-```
-
-```{r , eval=FALSE}
-
-unranked_df %>%
-  ggplot() +
-  geom_point(
-    aes(
-      x = 
+      x = acs_median_hh_inc,
+      y = percent_adults_with_diabetes,
+      color = appalachian
     )
-  )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "Median household income",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
 
-aes(color = fill =SDOH metric)
-
-size_measure = (size of points)
 ```
 
+```{r food-insecure-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_food_insecure,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of population food insecure",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r physical-inactivity-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_physically_inactive,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of adults with no leisure-time physical activity",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r obesity-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_adults_with_obesity,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of adults with obesity",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r poor-fair-health-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_fair_or_poor_health,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of adults reporting fair or poor health",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r poor-physical-health-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = average_number_of_physically_unhealthy_days,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "Average number of physically unhealthy days reported in past 30 days",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r physical-distress-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_frequent_physical_distress,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of adults reporting 14 or more days of poor physical health per month",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r poor-mental-health-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = average_number_of_mentally_unhealthy_days,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "Average number of mentally unhealthy days reported in past 30 days",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r mental-distress-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_frequent_mental_distress,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of adults reporting 14 or more days of poor mental health per month",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r all-age-poverty-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = saipe_pct_pov,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of all ages in poverty",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r poverty-ratio-under-1-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = acs_pct_person_inc_below99,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of population with an income to poverty ratio under 1.00",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r poverty-ratio-under-0.5-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = acs_pct_inc50,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of population with an income to poverty ratio under 0.5",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r no-insurance-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = acs_pct_uninsured,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "% of population with no health insurance coverage",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r num-fqhcs-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = pos_fqhc_rate,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "Number of Federally Qualified Health Centers (FQHCs) per 1,000 population",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r num-rhcs-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = pos_rhc_rate,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "Number of Rural Health Clinics (RHCs) per 1,000 population",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r max-dist-fqhcs-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = pos_max_dist_clinic,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "Maximum distance (in miles) to the nearest health clinic (FQHC, RHC)",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r mean-dist-fqhcs-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = pos_mean_dist_clinic,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "Mean distance (in miles) to the nearest health clinic (FQHC, RHC)",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
+
+```{r median-dist-fqhcs-diabetes}
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = pos_median_dist_clinic,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  labs(
+    color = "Appalachian vs. Non-Appalachian",
+    y = "% of adults with diabetes",
+    x = "Median distance (in miles) to the nearest health clinic (FQHC, RHC)",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  theme(
+    legend.position = 'bottom'
+    )
+
+```
