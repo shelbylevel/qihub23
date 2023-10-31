@@ -7,7 +7,7 @@ format:
     toc-depth: 2
     toc-location: left
     self-contained: true
-    css: css/style.css
+    css: css/lux_theme.css
 
 ---
 
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = FA
 
 # Contents of AHRQ SDOH Database
 
-The Social Determinants of Health (SDOH) database from AHRQ compiles SDOH-related variables across multiple domains from 87 sources including multiple federal and other data sources. The downloadable files contain a total of 675 variables available by year from 2009 through 2020. Data is available across three geography levels: all 675 variables are available by county level, 319 are available by ZIP code, and 321 variables are available by census tract.
+The [Social Determinants of Health (SDOH)](https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html) database from AHRQ compiles SDOH-related variables across multiple domains from 87 sources including multiple federal and other data sources. The downloadable files contain a total of 675 variables available by year from 2009 through 2020. Data is available across three geography levels: all 675 variables are available by county level, 319 are available by ZIP code, and 321 variables are available by census tract.
 
 These variables are organized into five main categories containing several topics each: social context (demographics, disability, immigration, living conditions), economic context (employment, income, poverty), education (attainment), physical infrastructure (environment, housing, internet, migration, transportation), and healthcare context (characteristics of facilities, characteristics of providers, distance to provider, health insurance status, health outcomes, health care quality, utilization and costs).
 
@@ -26,7 +26,7 @@ library(tidyverse)
 ```
 
 
-```{r readin-2020-data, include=FALSE, cache=TRUE}
+```{r readin-2020-data, include=FALSE}
 library(readxl)
 
 url0 = "https://www.ahrq.gov/sites/default/files/wysiwyg/sdoh/SDOH_2020_COUNTY_1_0.xlsx"
@@ -350,7 +350,7 @@ readxl::read_excel(
 
 # PLACES Data
 
-```{r readin-places-data, include=FALSE, cache=TRUE, eval=FALSE}
+```{r readin-places-data, include=FALSE, eval=FALSE}
 
 library(tidyverse)
 
@@ -425,7 +425,7 @@ places_tract %>%
              ) -> placestract
 ```
 
-# CHR Data
+# County Health Rankings Data
 
 ```{r readin-chr-data}
 
@@ -514,11 +514,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "Median household income",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -537,11 +538,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of population food insecure",
     caption = "Source: County Health Rankings (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -560,11 +562,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of adults with no leisure-time physical activity",
     caption = "Source: County Health Rankings (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -583,11 +586,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of adults with obesity",
     caption = "Source: County Health Rankings (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -606,11 +610,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of adults reporting fair or poor health",
     caption = "Source: County Health Rankings (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -629,11 +634,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "Average number of physically unhealthy days reported in past 30 days",
     caption = "Source: County Health Rankings (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -652,11 +658,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of adults reporting 14 or more days of poor physical health per month",
     caption = "Source: County Health Rankings (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -675,11 +682,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "Average number of mentally unhealthy days reported in past 30 days",
     caption = "Source: County Health Rankings (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -698,11 +706,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of adults reporting 14 or more days of poor mental health per month",
     caption = "Source: County Health Rankings (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -721,11 +730,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of all ages in poverty",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -744,11 +754,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of population with an income to poverty ratio under 1.00",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -767,11 +778,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of population with an income to poverty ratio under 0.5",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -790,11 +802,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "% of population with no health insurance coverage",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -813,11 +826,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "Number of Federally Qualified Health Centers (FQHCs) per 1,000 population",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -836,11 +850,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "Number of Rural Health Clinics (RHCs) per 1,000 population",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -859,11 +874,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "Maximum distance (in miles) to the nearest health clinic (FQHC, RHC)",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -882,11 +898,12 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "Mean distance (in miles) to the nearest health clinic (FQHC, RHC)",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
     )
@@ -905,13 +922,429 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   labs(
-    color = "Appalachian vs. Non-Appalachian",
+    color = NULL,
     y = "% of adults with diabetes",
     x = "Median distance (in miles) to the nearest health clinic (FQHC, RHC)",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
+  theme_minimal() +
   theme(
     legend.position = 'bottom'
+    )
+
+```
+
+# Ohio Opportunity Index
+
+The [Ohio Opportunity Index (OOI)](https://grc.osu.edu/Projects/OhioOpportunityIndex) compiles over 34 variables measuring neighborhood conditions and opportunities, known to be associated with health and well-being, from a variety of domains into a single index score. This index score represents the degree of opportunity available at the Census tract level across Ohio (higher value means more opportunity) and can be used to assess overall neighborhood conditions, target interventions, and adjust evaluations for neighborhood-level risk. It can also be used to learn what types of factors are driving opportunity in specific Census tracts. 
+
+The OOI variables comprise seven key domains: transportation, education, employment, housing, health, access, and crime. Within each domain, several variables that met validity criteria and were available to cover the entire state at a census tract level were identified.
+
+Construction of the OOI consisted of the following broad steps:
+1. Operationalize each measure from original, “raw” data
+2. Summarize the measure for each Ohio census tract as a rate, count, or level
+3. Standardize each variable, as needed, to yield consistency across measures and domains
+4. Synthesize the measures in each domain to create a “domain score”
+5. Create an overall Opportunity Index Score by using factor analysis methods to weight the contribution of each domain
+
+Regression methods were used to validate the OOI by testing the association between the OOI domain scores and five health outcomes:
+
+• Pre-term birth
+• Child severe mental illness
+• Youth asthma
+• Life expectancy
+• All-cause age-adjusted mortality
+
+```{r readin-ooi-data}
+
+read.csv(here::here(
+  'data',
+  'oi_v2_tract_18.csv'
+  )) %>%
+  janitor::clean_names() -> ooi_df
+
+```
+
+```{r merge-geometry-in}
+
+library(tigris)
+
+tracts(
+  cb = TRUE,
+  year = 2018,
+  state = 39
+) -> tigtracts18
+
+tigtracts18 %>%
+  mutate(
+    GEOID = as.double(GEOID)
+  ) %>%
+  right_join(
+    ooi_df,
+    by = c('GEOID' = 'tract')
+  ) -> ooi
+
+```
+
+```{r ooi-index-2018-tract, fig.cap = "Figure 3: Ohio Opportunity Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = oi_18),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Opportunity Index'
+    )
+
+```
+
+```{r ooi-crime-2018-tract, fig.cap = "Figure 3: Ohio Crime Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_crime),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Crime Index'
+    )
+
+```
+
+```{r ooi-education-2018-tract, fig.cap = "Figure 3: Ohio Education Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_educ),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Education Index'
+    )
+
+```
+
+```{r ooi-employ-2018-tract, fig.cap = "Figure 3: Ohio Employment Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_employ),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Employment Index'
+    )
+
+```
+
+```{r ooi-env-2018-tract, fig.cap = "Figure 3: Ohio Environment Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_env),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Environment Index'
+    )
+
+```
+
+```{r ooi-health-2018-tract, fig.cap = "Figure 3: Ohio Health Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_health),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Health Index'
+    )
+
+```
+
+```{r ooi-trans-2018-tract, fig.cap = "Figure 3: Ohio Transportation Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_trans),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Transportation Index'
+    )
+
+```
+
+```{r ooi-house-2018-tract, fig.cap = "Figure 3: Ohio Housing Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_house),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = 'Housing Index'
+    )
+
+```
+
+## Ohio Children's Opportunity Index
+
+The [Ohio Children's Opportunity Index (OOI)](https://grc.osu.edu/Projects/OhioOpportunityIndex) compiles over 54 variables measuring neighborhood conditions and opportunities, known to be associated with health and well-being, from a variety of domains into a single index score. This index score represents the degree of opportunity available at the Census tract level across Ohio (higher value means more opportunity) and can be used to assess overall neighborhood conditions, target interventions, and adjust evaluations for neighborhood-level risk. It can also be used to learn what types of factors are driving opportunity in specific Census tracts. 
+
+The OCOI variables comprise eight key domains: access, children health, criminal justice, education, environment, family stability, housing, and infant health. Within each domain, several variables that met inclusion criteria and were available to cover the entire state at a census tract level were identified.
+
+Construction of the OCOI consisted of the following broad steps:
+1. Operationalize each measure from original, “raw” data
+2. Summarize the measure for each Ohio census tract as a rate, count, or level
+3. Standardize each variable, as needed, to yield consistency across measures and domains
+4. Synthesize the measures in each domain to create a “domain score”
+5. Create an overall Children's Opportunity Index Score as the unweighted mean of the 8 domain scores
+
+A time varying version of the OCOI (spanning the two periods ending in 2014 and 2017) was created that incorporates 37 of the 53 variables within the same 8 domains.
+
+The OCOI was validated by testing the association of the OCOI and the domain scores with five health outcomes:
+
+• Pre-term birth
+• Child severe mental illness
+• Youth asthma
+• Life expectancy
+• All-cause age-adjusted mortality
+
+```{r readin-ooi-data}
+
+url0 = "https://grc.osu.edu/sites/default/files/inline-files/coi_v1.1.zip"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+read.csv(
+  destfile, sheet = 1
+  ) %>%
+  janitor::clean_names() -> coi_df
+
+```
+
+```{r}
+
+library(tigris)
+
+tracts(
+  cb = TRUE,
+  year = 2018,
+  state = 39
+) -> tigtracts18
+
+tigtracts18 %>%
+  mutate(
+    GEOID = as.double(GEOID)
+  ) %>%
+  right_join(
+    ooi_df,
+    by = c('GEOID' = 'tract')
+  ) -> ooi
+
+```
+
+
+```{r coi-index-2017-tract, fig.cap = "Figure 3: Ohio Children's Opportunity Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = coi_plus_17),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = "Children's Family Stability Index"
+    )
+
+```
+
+```{r coi-fam-tability-2017-tract, fig.cap = "Figure 3: Ohio Chilren's Family Stability Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_family_stability),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = "Family Stability Index"
+    )
+
+```
+
+```{r coi-infant-2017-tract, fig.cap = "Figure 3: Ohio Infant Health Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_infant_health),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = "Infant Health Index"
+    )
+
+```
+
+```{r coi-child-2017-tract, fig.cap = "Figure 3: Ohio Children's Health Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_childrens_health),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = "Children's Health Index"
+    )
+
+```
+
+```{r coi-housing-2017-tract, fig.cap = "Figure 3: Ohio Children's Housing Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_housing),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = "Housing Index"
+    )
+
+```
+
+```{r coi-access-2017-tract, fig.cap = "Figure 3: Ohio Children's Access Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_access),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = "Access Index"
+    )
+
+```
+
+```{r coi-education-2017-tract, fig.cap = "Figure 3: Ohio Children's Education Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_education),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = "Education Index"
+    )
+
+```
+
+```{r coi-env-2017-tract, fig.cap = "Figure 3: Ohio Children's Environment Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_environment),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = "Environment Index"
+    )
+
+```
+
+```{r coi-crime-2017-tract, fig.cap = "Figure 3: Ohio Children's Crime Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_crime),
+    color = "grey75"
+    ) + 
+  coord_sf(crs = 4326) +
+  ggthemes::theme_map() +
+  theme(legend.position = "right") +
+  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  labs(
+    fill = "Crime Index"
     )
 
 ```
