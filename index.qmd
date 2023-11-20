@@ -7,14 +7,40 @@ format:
     toc-depth: 2
     toc-location: left
     self-contained: true
-    #css: css/style.css
-    theme: lux
-
+    css: css/sl_theme.css
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE)
 ```
+
+```{r custom-themes}
+
+blue_map_theme <- function() {
+  ggthemes::theme_map() +
+  theme(
+  # color palette
+  # text
+  text = element_text(family = "Montserrat"),
+    # legend at the bottom 6)
+    legend.position = "bottom",
+    legend.key.width = unit(1.5, 'cm')
+  )
+}
+
+scatter_plot_theme <- function() {
+  theme_minimal() +
+  theme(
+  # color palette
+  # text
+  text = element_text(family = "Montserrat"),
+    # legend at the bottom 6)
+    legend.position = "bottom"
+  )
+}
+
+```
+
 
 # Contents of AHRQ SDOH Database
 
@@ -24,10 +50,10 @@ These variables are organized into five main categories containing several topic
 
 ```{r packages}
 library(tidyverse)
+library(ggplot2)
 ```
 
-
-```{r readin-2020-data, include=FALSE}
+```{r readin-2020-data, include=FALSE, cahce=TRUE}
 library(readxl)
 
 url0 = "https://www.ahrq.gov/sites/default/files/wysiwyg/sdoh/SDOH_2020_COUNTY_1_0.xlsx"
@@ -180,29 +206,32 @@ tigtracts %>%
 
 ```
 
-```{r county-pop-map, fig.cap = "Ohio's Appalachian and Non-Appalachian Counties", fig.height = 9, fig.width = 9, include = TRUE}
+as @fig-county-pop-map shows
+
+```{r county-pop-map, fig.height = 9, fig.width = 9, include = TRUE, fig.cap = "Ohio's Appalachian and Non-Appalachian Counties"}
 
 county_df %>%
   ggplot() +
   geom_sf(
     aes(fill = acs_tot_pop_wt),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf_text(
     aes(
       label = NAME
       ),
     color = "black",
-    size = 2.75
+    size = 2.75,
+    family = 'Montserrat'
     ) + 
   geom_sf(
     data = sf::st_union(appmapcounty), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +   
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white', labels = scales::comma) +
   labs(
     fill = 'Total Population'
     )
@@ -221,26 +250,27 @@ zcta_df %>%
   ggplot() +
   geom_sf(
     aes(fill = acs_tot_pop_wt_zc),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf_text(
     aes(
       label = NAME20
       ),
     color = "black",
-    size = 2.75
+    size = 2.75,
+    family = 'Montserrat'
     ) + 
   geom_sf(
     data = athensmap, 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +   
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white', labels = scales::comma) +
   labs(
     fill = 'Total Population'
-    )
+    ) 
 
 ```
 
@@ -253,12 +283,12 @@ tract_df %>%
   ggplot() +
   geom_sf(
     aes(fill = acs_tot_pop_wt),
-    color = "grey75"
+    color = "white"
     ) + 
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E",
+                       na.value = 'white', labels = scales::comma) +
   labs(
     fill = 'Total Population'
     )
@@ -277,16 +307,17 @@ county_df %>%
       label = NAME
       ),
     color = "black",
-    size = 2.75
+    size = 2.75,
+    family = 'Montserrat'
     ) + 
   geom_sf(
     data = sf::st_union(appmapcounty), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +   
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "bottom") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E", 
+                       na.value = 'white', labels = scales::comma) +
   labs(fill = "Dollars")
 #  scale_fill_gradientn(colours = terrain.colors(5)) 
 
@@ -301,12 +332,12 @@ zcta_df %>%
     color = "white") +
   geom_sf(
     data = sf::st_union(appmapcounty), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +   
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "bottom") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white', labels = scales::comma) + 
   labs(fill = "Dollars")
 #  scale_fill_gradientn(colours = terrain.colors(5)) 
 
@@ -321,12 +352,15 @@ tract_df %>%
     color = "white") +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52",
+    size = 3,
+    alpha = 0,
+    family = 'Montserrat'
     ) +   
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "bottom") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white', labels = scales::comma) + 
   labs(fill = "Dollars")
 #  scale_fill_gradientn(colours = terrain.colors(5)) 
 
@@ -334,7 +368,10 @@ tract_df %>%
 
 ## SDOH Variables Available at the Census Tract Level
 
-```{r}
+```{r tbl01}
+
+#| label: tbl-tbl01
+#| tbl-cap: Table of SDOH Variables
 
 readxl::read_excel(
   'codebooks/SDOH_2020_Codebook_1_0.xlsx', sheet = 4
@@ -347,7 +384,6 @@ readxl::read_excel(
   )
 
 ```
-
 
 # PLACES Data
 
@@ -428,7 +464,7 @@ places_tract %>%
 
 # County Health Rankings Data
 
-```{r readin-chr-data}
+```{r readin-chr-data, cache=TRUE}
 
 url0 = "https://www.countyhealthrankings.org/sites/default/files/media/document/2023%20County%20Health%20Rankings%20Ohio%20Data%20-%20v3.xlsx"
 destfile <- tempfile()
@@ -477,33 +513,34 @@ tigcounties %>%
 
 ```
 
-```{r county-diabetes, fig.cap = "Percent of Adults with Diabetes", fig.height = 9, fig.width = 9, include = TRUE}
+```{r county-diabetes, fig.cap = "Percent of Adults with Diabetes, by County", fig.height = 9, fig.width = 9, include = TRUE}
 
 county_sdoh_chr %>%
   ggplot() +
   geom_sf(
-    aes(fill = percent_adults_with_diabetes)) +
+    aes(fill = percent_adults_with_diabetes,
+        color = 'white')) +
   geom_sf_text(
     aes(
       label = county
       ),
     color = "black",
-    size = 2.75
+    size = 2.75,
+    family = 'Montserrat'
     ) + 
   geom_sf(
     data = sf::st_union(appmapcounty), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +   
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "bottom") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") + 
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E", na.value = 'white', labels = scales::comma) + 
   labs(fill = "Percent",
        caption = "Source: County Health Rankings (2020)")
 
 ```
 
-```{r income-diabetes}
+```{r income-diabetes, fig.cap = "Median Household Income vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -515,7 +552,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#45849E", "#D0D0D0")
     ) + 
   labs(
     color = NULL,
@@ -523,14 +560,11 @@ county_sdoh_chr %>%
     x = "Median household income",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r food-insecure-diabetes}
+```{r food-insecure-diabetes, fig.cap = "Food Insecurity vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -542,7 +576,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -550,14 +584,11 @@ county_sdoh_chr %>%
     x = "% of population food insecure",
     caption = "Source: County Health Rankings (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r physical-inactivity-diabetes}
+```{r physical-inactivity-diabetes, fig.cap = "Adults Physically Inactive vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -569,7 +600,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -577,14 +608,11 @@ county_sdoh_chr %>%
     x = "% of adults with no leisure-time physical activity",
     caption = "Source: County Health Rankings (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r obesity-diabetes}
+```{r obesity-diabetes, fig.cap = "Adults with Obesity vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -596,7 +624,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -604,14 +632,11 @@ county_sdoh_chr %>%
     x = "% of adults with obesity",
     caption = "Source: County Health Rankings (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r poor-fair-health-diabetes}
+```{r poor-fair-health-diabetes, fig.cap = "Adults Reporting Fair or Poor Health vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -623,7 +648,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -631,14 +656,11 @@ county_sdoh_chr %>%
     x = "% of adults reporting fair or poor health",
     caption = "Source: County Health Rankings (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r poor-physical-health-diabetes}
+```{r poor-physical-health-diabetes, fig.cap = "Physically Unhealthy Days vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -650,7 +672,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -658,14 +680,11 @@ county_sdoh_chr %>%
     x = "Average number of physically unhealthy days reported in past 30 days",
     caption = "Source: County Health Rankings (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r physical-distress-diabetes}
+```{r physical-distress-diabetes, fig.cap = "Poor Physical Health Days vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -677,7 +696,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -685,14 +704,11 @@ county_sdoh_chr %>%
     x = "% of adults reporting 14 or more days of poor physical health per month",
     caption = "Source: County Health Rankings (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r poor-mental-health-diabetes}
+```{r poor-mental-health-diabetes, fig.cap = "Mentally Unhealthy Days vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -704,7 +720,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -712,14 +728,11 @@ county_sdoh_chr %>%
     x = "Average number of mentally unhealthy days reported in past 30 days",
     caption = "Source: County Health Rankings (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r mental-distress-diabetes}
+```{r mental-distress-diabetes, fig.cap = "Poor Mentalh Health Days vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -731,7 +744,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -739,14 +752,11 @@ county_sdoh_chr %>%
     x = "% of adults reporting 14 or more days of poor mental health per month",
     caption = "Source: County Health Rankings (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r all-age-poverty-diabetes}
+```{r all-age-poverty-diabetes, fig.cap = "Poverty vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -758,7 +768,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -766,14 +776,11 @@ county_sdoh_chr %>%
     x = "% of all ages in poverty",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r poverty-ratio-under-1-diabetes}
+```{r poverty-ratio-under-1-diabetes, fig.cap = "Income to Poverty Ratio Under 1.00 vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -785,7 +792,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -793,14 +800,11 @@ county_sdoh_chr %>%
     x = "% of population with an income to poverty ratio under 1.00",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r poverty-ratio-under-0.5-diabetes}
+```{r poverty-ratio-under-0.5-diabetes, fig.cap = "Income to Poverty Ratio Under 0.5 vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -812,7 +816,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -820,14 +824,11 @@ county_sdoh_chr %>%
     x = "% of population with an income to poverty ratio under 0.5",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r no-insurance-diabetes}
+```{r no-insurance-diabetes, fig.cap = "No Health Insurance vs. Adults with Diabetes, by County"}
 
 county_sdoh_chr %>%
   ggplot(
@@ -839,7 +840,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -847,14 +848,11 @@ county_sdoh_chr %>%
     x = "% of population with no health insurance coverage",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r num-fqhcs-diabetes}
+```{r num-fqhcs-diabetes, include = FALSE}
 
 county_sdoh_chr %>%
   ggplot(
@@ -866,7 +864,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -874,10 +872,7 @@ county_sdoh_chr %>%
     x = "Number of Federally Qualified Health Centers (FQHCs) per 1,000 population",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
@@ -893,7 +888,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -901,10 +896,7 @@ county_sdoh_chr %>%
     x = "Number of Rural Health Clinics (RHCs) per 1,000 population",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
@@ -920,7 +912,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -928,14 +920,11 @@ county_sdoh_chr %>%
     x = "Maximum distance (in miles) to the nearest health clinic (FQHC, RHC)",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r mean-dist-fqhcs-diabetes}
+```{r mean-dist-fqhcs-diabetes, include = FALSE}
 
 county_sdoh_chr %>%
   ggplot(
@@ -947,7 +936,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -955,14 +944,11 @@ county_sdoh_chr %>%
     x = "Mean distance (in miles) to the nearest health clinic (FQHC, RHC)",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
-```{r median-dist-fqhcs-diabetes}
+```{r median-dist-fqhcs-diabetes, include = FALSE}
 
 county_sdoh_chr %>%
   ggplot(
@@ -974,7 +960,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#FA4616", "#756E65")
+    values = c("#5CB0D3", "#AEABAB")
     ) +
   labs(
     color = NULL,
@@ -982,33 +968,25 @@ county_sdoh_chr %>%
     x = "Median distance (in miles) to the nearest health clinic (FQHC, RHC)",
     caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
     ) +
-  theme_minimal() +
-  theme(
-    legend.position = 'bottom'
-    )
+  scatter_plot_theme()
 
 ```
 
 # Ohio Opportunity Index
 
-The [Ohio Opportunity Index (OOI)](https://grc.osu.edu/Projects/OhioOpportunityIndex) compiles over 34 variables measuring neighborhood conditions and opportunities, known to be associated with health and well-being, from a variety of domains into a single index score. This index score represents the degree of opportunity available at the Census tract level across Ohio (higher value means more opportunity) and can be used to assess overall neighborhood conditions, target interventions, and adjust evaluations for neighborhood-level risk. It can also be used to learn what types of factors are driving opportunity in specific Census tracts. 
+The [Ohio Opportunity Index (OOI)](https://grc.osu.edu/Projects/OhioOpportunityIndex) compiles over 34 variables measuring neighborhood conditions and opportunities, known to be associated with health and well-being, from a variety of domains into a single index score. This index score represents the degree of opportunity available at the Census tract level across Ohio (higher value means more opportunity) and can be used to assess overall neighborhood conditions, target interventions, and adjust evaluations for neighborhood-level risk. It can also be used to learn what types of factors are driving opportunity in specific Census tracts.
 
 The OOI variables comprise seven key domains: transportation, education, employment, housing, health, access, and crime. Within each domain, several variables that met validity criteria and were available to cover the entire state at a census tract level were identified.
 
-Construction of the OOI consisted of the following broad steps:
-1. Operationalize each measure from original, “raw” data
-2. Summarize the measure for each Ohio census tract as a rate, count, or level
-3. Standardize each variable, as needed, to yield consistency across measures and domains
-4. Synthesize the measures in each domain to create a “domain score”
-5. Create an overall Opportunity Index Score by using factor analysis methods to weight the contribution of each domain
+Construction of the OOI consisted of the following broad steps: 1. Operationalize each measure from original, "raw" data 2. Summarize the measure for each Ohio census tract as a rate, count, or level 3. Standardize each variable, as needed, to yield consistency across measures and domains 4. Synthesize the measures in each domain to create a "domain score" 5. Create an overall Opportunity Index Score by using factor analysis methods to weight the contribution of each domain
 
 Regression methods were used to validate the OOI by testing the association between the OOI domain scores and five health outcomes:
 
-* Pre-term birth
-* Child severe mental illness
-* Youth asthma
-* Life expectancy
-* All-cause age-adjusted mortality
+-   Pre-term birth
+-   Child severe mental illness
+-   Youth asthma
+-   Life expectancy
+-   All-cause age-adjusted mortality
 
 ```{r readin-ooi-data}
 
@@ -1047,16 +1025,16 @@ ooi %>%
   ggplot() +
   geom_sf(
     aes(fill = oi_18),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = 'Opportunity Index'
     )
@@ -1069,16 +1047,16 @@ ooi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_crime),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = 'Crime Index'
     )
@@ -1091,16 +1069,16 @@ ooi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_educ),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = 'Education Index'
     )
@@ -1113,16 +1091,16 @@ ooi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_employ),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = 'Employment Index'
     )
@@ -1135,16 +1113,16 @@ ooi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_env),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = 'Environment Index'
     )
@@ -1157,16 +1135,16 @@ ooi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_health),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = 'Health Index'
     )
@@ -1179,16 +1157,16 @@ ooi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_trans),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = 'Transportation Index'
     )
@@ -1201,16 +1179,16 @@ ooi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_house),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = 'Housing Index'
     )
@@ -1219,26 +1197,21 @@ ooi %>%
 
 ## Ohio Children's Opportunity Index
 
-The [Ohio Children's Opportunity Index (OOI)](https://grc.osu.edu/Projects/OhioOpportunityIndex) compiles over 54 variables measuring neighborhood conditions and opportunities, known to be associated with health and well-being, from a variety of domains into a single index score. This index score represents the degree of opportunity available at the Census tract level across Ohio (higher value means more opportunity) and can be used to assess overall neighborhood conditions, target interventions, and adjust evaluations for neighborhood-level risk. It can also be used to learn what types of factors are driving opportunity in specific Census tracts. 
+The [Ohio Children's Opportunity Index (OOI)](https://grc.osu.edu/Projects/OhioOpportunityIndex) compiles over 54 variables measuring neighborhood conditions and opportunities, known to be associated with health and well-being, from a variety of domains into a single index score. This index score represents the degree of opportunity available at the Census tract level across Ohio (higher value means more opportunity) and can be used to assess overall neighborhood conditions, target interventions, and adjust evaluations for neighborhood-level risk. It can also be used to learn what types of factors are driving opportunity in specific Census tracts.
 
 The OCOI variables comprise eight key domains: access, children health, criminal justice, education, environment, family stability, housing, and infant health. Within each domain, several variables that met inclusion criteria and were available to cover the entire state at a census tract level were identified.
 
-Construction of the OCOI consisted of the following broad steps:
-1. Operationalize each measure from original, “raw” data
-2. Summarize the measure for each Ohio census tract as a rate, count, or level
-3. Standardize each variable, as needed, to yield consistency across measures and domains
-4. Synthesize the measures in each domain to create a “domain score”
-5. Create an overall Children's Opportunity Index Score as the unweighted mean of the 8 domain scores
+Construction of the OCOI consisted of the following broad steps: 1. Operationalize each measure from original, "raw" data 2. Summarize the measure for each Ohio census tract as a rate, count, or level 3. Standardize each variable, as needed, to yield consistency across measures and domains 4. Synthesize the measures in each domain to create a "domain score" 5. Create an overall Children's Opportunity Index Score as the unweighted mean of the 8 domain scores
 
 A time varying version of the OCOI (spanning the two periods ending in 2014 and 2017) was created that incorporates 37 of the 53 variables within the same 8 domains.
 
 The OCOI was validated by testing the association of the OCOI and the domain scores with five health outcomes:
 
-* Pre-term birth
-* Child severe mental illness
-* Youth asthma
-* Life expectancy
-* All-cause age-adjusted mortality
+-   Pre-term birth
+-   Child severe mental illness
+-   Youth asthma
+-   Life expectancy
+-   All-cause age-adjusted mortality
 
 ```{r readin-coi-data}
 
@@ -1273,23 +1246,22 @@ tigtracts17 %>%
 
 ```
 
-
 ```{r coi-index-2017-tract, fig.cap = "Ohio Children's Opportunity Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
 
 coi %>%
   ggplot() +
   geom_sf(
     aes(fill = coi_plus_17),
-    color = "grey75"
+    color = "white"
     ) + 
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = "Children's Family Stability Index"
     )
@@ -1302,16 +1274,16 @@ coi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_family_stability),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = "Family Stability Index"
     )
@@ -1324,16 +1296,16 @@ coi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_infant_health),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = "Infant Health Index"
     )
@@ -1346,16 +1318,16 @@ coi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_childrens_health),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = "Children's Health Index"
     )
@@ -1368,16 +1340,16 @@ coi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_housing),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = "Housing Index"
     )
@@ -1390,16 +1362,16 @@ coi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_access),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = "Access Index"
     )
@@ -1412,16 +1384,16 @@ coi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_education),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = "Education Index"
     )
@@ -1434,16 +1406,16 @@ coi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_environment),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = "Environment Index"
     )
@@ -1456,16 +1428,16 @@ coi %>%
   ggplot() +
   geom_sf(
     aes(fill = d_crime),
-    color = "grey75"
+    color = "white"
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#FA4616", size = 3, alpha = 0
+    color = "#B86F52", size = 3, alpha = 0
     ) +
   coord_sf(crs = 4326) +
-  ggthemes::theme_map() +
-  theme(legend.position = "right") +
-  scale_fill_gradient2(low = "#E7ECC3", mid = "#F9F7ED", high = "#00694E") +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white') +
   labs(
     fill = "Crime Index"
     )

@@ -1,6 +1,75 @@
 ---
 title: "QI Hub Presentation"
 format: revealjs
-editor: visual
 ---
 
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(
+  message = FALSE, warning = FALSE, cache = FALSE, echo = FALSE,
+  fig.align = "center", out.width = "100%", fig.retina = 3,
+  dev = "svg"
+  )
+
+library(tidyverse)
+library(hrbrthemes)
+library(kableExtra)
+library(epoxy)
+
+```
+
+```{r custom-themes}
+
+blue_map_theme <- function() {
+  ggthemes::theme_map() +
+  theme(
+  # color palette
+  # text
+  text = element_text(family = "Montserrat"),
+    # legend at the bottom 6)
+    legend.position = "bottom",
+    legend.key.width = unit(1.5, 'cm')
+  )
+}
+
+scatter_plot_theme <- function() {
+  theme_minimal() +
+  theme(
+  # color palette
+  # text
+  text = element_text(family = "Montserrat"),
+    # legend at the bottom 6)
+    legend.position = "bottom"
+  )
+}
+
+```
+
+::: {.panel-tabset}
+
+### Table
+
+```{r}
+
+readxl::read_excel(
+  'codebooks/SDOH_2020_Codebook_1_0.xlsx', sheet = 4
+) %>%
+  select(
+    1:5
+  ) %>%
+  filter(
+    Domain == '1. Social context'
+  ) %>%
+  DT::datatable(
+    rownames = FALSE
+  )
+
+```
+
+### Map
+
+Content for `Tab B`
+
+### Scatterplot
+
+:::
