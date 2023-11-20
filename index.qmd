@@ -11,7 +11,9 @@ format:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE)
+knitr::opts_chunk$set(
+  echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE
+  )
 ```
 
 ```{r custom-themes}
@@ -206,7 +208,9 @@ tigtracts %>%
 
 ```
 
-as @fig-county-pop-map shows
+```{r county-pop-map, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-county-pop-map
+#| fig-cap: "Ohio's Appalachian and Non-Appalachian Counties"
 
 ```{r county-pop-map, fig.height = 9, fig.width = 9, include = TRUE, fig.cap = "Ohio's Appalachian and Non-Appalachian Counties"}
 
@@ -234,11 +238,19 @@ county_df %>%
                        na.value = 'white', labels = scales::comma) +
   labs(
     fill = 'Total Population'
-    )
+    ) +
+  ggthemes::theme_map() +
+  theme(
+    legend.position = "bottom",
+    legend.key.size = unit(1.5, "cm")
+    ) 
+  
 
 ```
 
-```{r athens-zcta-pop-map, fig.cap = "Athens County Zip Codes", fig.height = 9, fig.width = 9, include = TRUE}
+```{r athens-zcta-pop-map, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-athens-zcta-pop-map
+#| fig-cap: "Athens County Zip Codes"
 
 zcta_df %>%
   mutate(
@@ -272,9 +284,12 @@ zcta_df %>%
     fill = 'Total Population'
     ) 
 
+
 ```
 
-```{r athens-tract-pop-map, fig.cap = "Athens County Census Tracts", fig.height = 9, fig.width = 9, include = TRUE}
+```{r athens-tract-pop-map, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-athens-tract-pop-map
+#| fig-cap: "Athens County Census Tracts"
 
 tract_df %>%
   filter(
@@ -291,11 +306,19 @@ tract_df %>%
                        na.value = 'white', labels = scales::comma) +
   labs(
     fill = 'Total Population'
-    )
+    ) +
+  ggthemes::theme_map() +
+  theme(
+    legend.position = "bottom",
+    legend.key.size = unit(1.5, "cm")
+    ) 
+  
 
 ```
 
-```{r median-household-income-county, fig.cap = "Median Household Income by County", fig.height = 9, fig.width = 9, include = TRUE}
+```{r median-household-income-county, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-median-household-income-county
+#| fig-cap: "Median Household Income by County"
 
 county_df %>%
   ggplot() +
@@ -323,7 +346,9 @@ county_df %>%
 
 ```
 
-```{r median-household-income-zipcode, fig.cap = "Median Household Income by Zip Code", fig.height = 9, fig.width = 9, include = TRUE}
+```{r median-household-income-zipcode, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-median-household-income-zipcode
+#| fig-cap: "Median Household Income by Zip Code"
 
 zcta_df %>%
   ggplot() +
@@ -343,7 +368,9 @@ zcta_df %>%
 
 ```
 
-```{r median-household-income-tract, fig.cap = "Median Household Income by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+```{r median-household-income-tract, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-median-household-income-tract
+#| fig-cap: "Median Household Income by Census Tract"
 
 tract_df %>%
   ggplot() +
@@ -513,13 +540,14 @@ tigcounties %>%
 
 ```
 
-```{r county-diabetes, fig.cap = "Percent of Adults with Diabetes, by County", fig.height = 9, fig.width = 9, include = TRUE}
+```{r county-diabetes, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-county-diabetes
+#| fig-cap: "Percent of Adults with Diabetes"
 
 county_sdoh_chr %>%
   ggplot() +
   geom_sf(
-    aes(fill = percent_adults_with_diabetes,
-        color = 'white')) +
+    aes(fill = (percent_adults_with_diabetes)/100)) +
   geom_sf_text(
     aes(
       label = county
@@ -540,7 +568,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r income-diabetes, fig.cap = "Median Household Income vs. Adults with Diabetes, by County"}
+```{r income-diabetes}
+#| label: fig-income-diabetes
+#| fig-cap: "Diabetes Rates and Median Household Incomes in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -554,6 +584,9 @@ county_sdoh_chr %>%
   scale_color_manual(
     values = c("#45849E", "#D0D0D0")
     ) + 
+  scale_x_continuous(
+    labels = scales::label_dollar()
+    ) +
   labs(
     color = NULL,
     y = "% of adults with diabetes",
@@ -564,7 +597,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r food-insecure-diabetes, fig.cap = "Food Insecurity vs. Adults with Diabetes, by County"}
+```{r food-insecure-diabetes}
+#| label: fig-food-insecure-diabetes
+#| fig-cap: "Diabetes Rates and Food Insecurity in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -588,7 +623,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r physical-inactivity-diabetes, fig.cap = "Adults Physically Inactive vs. Adults with Diabetes, by County"}
+```{r physical-inactivity-diabetes}
+#| label: fig-physical-inactivity-diabetes
+#| fig-cap: "Diabetes Rates and Physical Inactivity in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -612,7 +649,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r obesity-diabetes, fig.cap = "Adults with Obesity vs. Adults with Diabetes, by County"}
+```{r obesity-diabetes}
+#| label: fig-obesity-diabetes
+#| fig-cap: "Diabetes Rates and Obesity in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -636,7 +675,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r poor-fair-health-diabetes, fig.cap = "Adults Reporting Fair or Poor Health vs. Adults with Diabetes, by County"}
+```{r poor-fair-health-diabetes}
+#| label: fig-poor-fair-health-diabetes
+#| fig-cap: "Diabetes Rates and Fair Health in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -653,14 +694,16 @@ county_sdoh_chr %>%
   labs(
     color = NULL,
     y = "% of adults with diabetes",
-    x = "% of adults reporting fair or poor health",
+    x = "% of adults reporting fair health",
     caption = "Source: County Health Rankings (2020)"
     ) +
   scatter_plot_theme()
 
 ```
 
-```{r poor-physical-health-diabetes, fig.cap = "Physically Unhealthy Days vs. Adults with Diabetes, by County"}
+```{r poor-physical-health-diabetes}
+#| label: fig-poor-physical-health-diabetes
+#| fig-cap: "Diabetes Rates and Poor Health in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -684,7 +727,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r physical-distress-diabetes, fig.cap = "Poor Physical Health Days vs. Adults with Diabetes, by County"}
+```{r physical-distress-diabetes}
+#| label: fig-physical-distress-diabetes
+#| fig-cap: "Diabetes Rates and Physical Distress in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -708,7 +753,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r poor-mental-health-diabetes, fig.cap = "Mentally Unhealthy Days vs. Adults with Diabetes, by County"}
+```{r poor-mental-health-diabetes}
+#| label: fig-mental-health-diabetes
+#| fig-cap: "Diabetes Rates and Poor Mental Health in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -732,7 +779,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r mental-distress-diabetes, fig.cap = "Poor Mentalh Health Days vs. Adults with Diabetes, by County"}
+```{r mental-distress-diabetes}
+#| label: fig-mental-distress-diabetes
+#| fig-cap: "Diabetes Rates and Mental Distress in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -756,7 +805,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r all-age-poverty-diabetes, fig.cap = "Poverty vs. Adults with Diabetes, by County"}
+```{r all-age-poverty-diabetes}
+#| label: fig-all-age-poverty-diabetes
+#| fig-cap: "Diabetes Rates and Poverty in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -780,7 +831,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r poverty-ratio-under-1-diabetes, fig.cap = "Income to Poverty Ratio Under 1.00 vs. Adults with Diabetes, by County"}
+```{r poverty-ratio-under-1-diabetes}
+#| label: fig-poverty-ratio-under-1-diabetes
+#| fig-cap: "Diabetes Rates and Poverty Ratio Under 1 in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -804,7 +857,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r poverty-ratio-under-0.5-diabetes, fig.cap = "Income to Poverty Ratio Under 0.5 vs. Adults with Diabetes, by County"}
+```{r poverty-ratio-under-0.5-diabetes}
+#| label: fig-poverty-ratio-under-0.5-diabetes
+#| fig-cap: "Diabetes Rates and Poverty Ratio Under 0.5 in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -828,7 +883,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r no-insurance-diabetes, fig.cap = "No Health Insurance vs. Adults with Diabetes, by County"}
+```{r no-insurance-diabetes}
+#| label: fig-no-insurance-diabetes
+#| fig-cap: "Diabetes Rates and the Uninsured in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -852,7 +909,9 @@ county_sdoh_chr %>%
 
 ```
 
-```{r num-fqhcs-diabetes, include = FALSE}
+```{r num-fqhcs-diabetes}
+#| label: fig-num-fqhcs-diabetes
+#| fig-cap: "Diabetes Rates and Number of FQHCs in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
@@ -877,6 +936,8 @@ county_sdoh_chr %>%
 ```
 
 ```{r num-rhcs-diabetes, include = FALSE}
+#| label: fig-num-rhcs-diabetes
+#| fig-cap: "Diabetes Rates and Number of Rural Health Clinics in Ohio's Counties"
 
 county_sdoh_chr %>%
   ggplot(
