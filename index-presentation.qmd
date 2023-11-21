@@ -1,6 +1,7 @@
 ---
 title: "QI Hub Presentation"
 format: revealjs
+css: css/sl_theme.css
 ---
 
 ```{r setup, include=FALSE}
@@ -45,11 +46,273 @@ scatter_plot_theme <- function() {
 
 ```
 
-::: {.panel-tabset}
+```{r readin-2020-data, include=FALSE, cahce=TRUE}
+library(readxl)
 
-### Table
+url0 = "https://www.ahrq.gov/sites/default/files/wysiwyg/sdoh/SDOH_2020_COUNTY_1_0.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+readxl::read_excel(
+  destfile, sheet = 2
+  ) %>%
+  janitor::clean_names() %>%
+  filter(
+    statefips == 39
+    ) -> sdoh_county
 
-```{r}
+url0 = "https://www.ahrq.gov/sites/default/files/wysiwyg/sdoh/SDOH_2020_ZIPCODE_1_0.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+readxl::read_excel(
+  destfile, sheet = 2
+  ) %>%
+  janitor::clean_names() %>%
+  filter(
+    statefips == 39
+    ) -> sdoh_zip
+
+url0 = "https://www.ahrq.gov/downloads/sdoh/sdoh_2020_tract_1_0.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+readxl::read_excel(
+  destfile, sheet = 2
+  ) %>%
+  janitor::clean_names() %>%
+  filter(
+    statefips == 39
+    ) -> sdoh_tract
+
+```
+
+```{r appalachian-counties, include = FALSE}
+
+c(
+  "Adams", "Ashtabula", "Athens", "Belmont", "Brown", 
+  "Carroll", "Clermont", "Columbiana", "Coshocton", 
+  "Gallia", "Guernsey", "Harrison", "Highland", "Hocking",
+  "Holmes", "Jackson", "Jefferson", "Lawrence", "Mahoning",
+  "Meigs", "Monroe", "Morgan", "Muskingum", "Noble", 
+  "Perry", "Pike", "Ross", "Scioto", "Trumbull", 
+  "Tuscarawas", "Vinton", "Washington"
+  ) -> appalachian.ohio 
+
+```
+
+```{r pull-geometry-data,include=FALSE}
+library(tigris)
+
+counties(
+  state = 'OH',
+  cb = TRUE,  #clip boundaries
+  year = 2020
+) -> tigcounties
+
+zctas(
+  cb = TRUE,
+  year = 2020
+) -> tigzctas
+
+tracts(
+  cb = TRUE,
+  year = 2020
+) -> tigtracts
+
+```
+
+```{r app-map-outline}
+
+tigcounties %>% 
+  mutate(
+    appalachian = ifelse(
+      NAME %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+  ) %>% 
+  filter(appalachian == "Appalachian") -> appmapcounty
+
+tigtracts %>%
+  filter(
+    STATEFP == 39
+  ) %>%
+  mutate(
+    county = stringr::str_remove_all(NAMELSADCO, " County"),
+    appalachian = ifelse(
+      county %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+  ) %>% 
+  filter(
+    appalachian == "Appalachian"
+    ) -> appmaptract
+
+```
+
+```{r athens-co-outline}
+
+tigcounties %>%
+  filter(
+    NAME == 'Athens'
+  ) -> athensmap
+  
+```
+
+```{r merge-sdoh-geometry}
+
+# need to start with geometry df in order to keep geometry data
+
+tigcounties %>%
+  left_join(
+    sdoh_county,
+    by = c('GEOID' = 'countyfips')
+  ) %>%
+  mutate(
+    appalachian = ifelse(
+      NAME %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+    ) -> county_df
+
+# using inner join to filter by OH
+tigzctas %>%
+  inner_join(
+    sdoh_zip,
+    by = c('ZCTA5CE20' = 'zcta')
+  ) -> zcta_df
+
+# right join to not lose any from sdoh df
+tigtracts %>%
+  right_join(
+    sdoh_tract,
+    by = c('GEOID' = 'tractfips')
+  ) %>%
+  mutate(
+    county = stringr::str_remove_all(NAMELSADCO, " County"),
+    appalachian = ifelse(
+      county %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+  ) -> tract_df
+
+```
+
+::: panel-tabset
+### Counties
+
+```{r county-pop-map, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-county-pop-map
+#| fig-cap: Ohio's Appalachian and Non-Appalachian Counties
+#| fig-subcap: This map displays the total population for each county in Ohio. Franklin county has the highest total population and Vinton county has the lowest.
+
+county_df %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_tot_pop_wt),
+    color = "white"
+    ) +
+  geom_sf_text(
+    aes(
+      label = NAME
+      ),
+    color = "black",
+    size = 2.75,
+    family = 'Montserrat'
+    ) + 
+  geom_sf(
+    data = sf::st_union(appmapcounty), 
+    color = "#B86F52", size = 3, alpha = 0
+    ) + 
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white', labels = scales::label_comma()) +
+  labs(
+    fill = 'Total Population'
+  )
+
+```
+
+### Zip Codes
+
+```{r athens-zcta-pop-map, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-athens-zcta-pop-map
+#| fig-cap: Athens County Zip Codes
+#| fig-subcap: This map displays the total population for each zip code in Athens county. 45701 has the highest total population and 45740 has the lowest.
+
+zcta_df %>%
+  mutate(
+    zipcode_num = as.integer(zipcode)
+  ) %>%
+  filter(
+    zipcode_num %in% c(45701, 45710, 45711, 45716, 45719, 43728, 45723, 45732, 45735, 45740, 45742, 45761, 45764, 45766, 45776, 45778, 45780, 45782)
+  ) %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_tot_pop_wt_zc),
+    color = "white"
+    ) +
+  geom_sf_text(
+    aes(
+      label = NAME20
+      ),
+    color = "black",
+    size = 2.75,
+    family = 'Montserrat'
+    ) + 
+  geom_sf(
+    data = athensmap, 
+    color = "#B86F52", size = 3, alpha = 0
+    ) +   
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white', labels = scales::label_comma()) +
+  labs(
+    fill = 'Total Population'
+    ) 
+
+```
+
+### Census Tracts
+
+```{r athens-tract-pop-map, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-athens-tract-pop-map
+#| fig-cap: "Athens County Census Tracts"
+
+tract_df %>%
+  filter(
+    COUNTYFP == '009'
+  ) %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_tot_pop_wt),
+    color = "white"
+    ) + 
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E",
+                       na.value = 'white', labels = scales::label_comma()) +
+  labs(
+    fill = 'Total Population'
+    )
+
+```
+:::
+
+# Contents of AHRQ SDOH Database
+
+The [Social Determinants of Health (SDOH)](https://www.ahrq.gov/sdoh/data-analytics/sdoh-data.html) database from AHRQ compiles SDOH-related variables across multiple domains from 87 sources including multiple federal and other data sources. The downloadable files contain a total of 675 variables available by year from 2009 through 2020. Data is available across three geography levels: all 675 variables are available by county level, 319 are available by ZIP code, and 321 variables are available by census tract.
+
+These variables are organized into five main categories containing several topics each: social context (demographics, disability, immigration, living conditions), economic context (employment, income, poverty), education (attainment), physical infrastructure (environment, housing, internet, migration, transportation), and healthcare context (characteristics of facilities, characteristics of providers, distance to provider, health insurance status, health outcomes, health care quality, utilization and costs).
+
+## SDOH Variables Available at the Census Tract Level
+
+```{r tbl01}
+#| label: tbl-tbl01
+#| tbl-cap: Table of SDOH Variables
 
 readxl::read_excel(
   'codebooks/SDOH_2020_Codebook_1_0.xlsx', sheet = 4
@@ -57,19 +320,654 @@ readxl::read_excel(
   select(
     1:5
   ) %>%
-  filter(
-    Domain == '1. Social context'
-  ) %>%
   DT::datatable(
     rownames = FALSE
   )
 
 ```
 
-### Map
+# County Health Rankings Data
 
-Content for `Tab B`
+```{r readin-chr-data, cache=TRUE}
 
-### Scatterplot
+url0 = "https://www.countyhealthrankings.org/sites/default/files/media/document/2023%20County%20Health%20Rankings%20Ohio%20Data%20-%20v3.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+readxl::read_excel(
+  destfile, sheet = 4, skip = 1
+  ) %>%
+  janitor::clean_names() -> chr_ranked
 
+url0 = "https://www.countyhealthrankings.org/sites/default/files/media/document/2023%20County%20Health%20Rankings%20Ohio%20Data%20-%20v3.xlsx"
+destfile <- tempfile()
+download.file(url0, destfile, mode = 'wb')
+readxl::read_excel(
+  destfile, sheet = 5, skip = 1
+  ) %>%
+  janitor::clean_names() -> chr_unranked
+
+```
+
+```{r merge-sdoh-chr}
+
+county_df %>%
+  left_join(
+    chr_unranked,
+    by = c('GEOID' = 'fips')
+  ) -> county_sdoh_chr
+
+county_sdoh_chr %>%
+  left_join(
+    chr_ranked,
+    by = c('GEOID' = 'fips')
+  ) -> county_sdoh_chr
+
+tigcounties %>%
+  left_join(
+    chr_ranked,
+    by = c('GEOID' = 'fips')
+  ) %>%
+  mutate(
+    appalachian = ifelse(
+      NAME %in% appalachian.ohio, 
+      "Appalachian", 
+      "Not Appalachian"
+      )
+    ) -> ranked_df
+
+```
+
+```{r county-diabetes, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-county-diabetes
+#| fig-cap: "Percent of Adults with Diabetes"
+
+county_sdoh_chr %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = (percent_adults_with_diabetes)/100),
+    color = 'white',
+    alpha = .9) +
+  geom_sf_text(
+    aes(
+      label = county
+      ),
+    color = "black",
+    size = 2.75,
+    family = 'Montserrat'
+    ) + 
+  geom_sf(
+    data = sf::st_union(appmapcounty), 
+    color = "#B86F52", size = 3, alpha = 0
+    ) +   
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E", na.value = 'white', labels = scales::label_percent()) + 
+  labs(fill = "Percent",
+       caption = "Source: County Health Rankings (2020)")
+
+```
+
+```{r income-diabetes}
+#| label: fig-income-diabetes
+#| fig-cap: "Diabetes Rates and Median Household Incomes in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = acs_median_hh_inc,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) + 
+  scale_x_continuous(
+    labels = scales::label_dollar()
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "Median household income",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r food-insecure-diabetes}
+#| label: fig-food-insecure-diabetes
+#| fig-cap: "Diabetes Rates and Food Insecurity in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_food_insecure,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  scale_x_continuous(
+    labels = scales::label_percent()
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "% of population food insecure",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r physical-inactivity-diabetes}
+#| label: fig-physical-inactivity-diabetes
+#| fig-cap: "Diabetes Rates and Physical Inactivity in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_physically_inactive/100,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  scale_x_continuous(
+    labels = scales::label_percent()
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "% of adults with no leisure-time physical activity",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r poor-fair-health-diabetes}
+#| label: fig-poor-fair-health-diabetes
+#| fig-cap: "Diabetes Rates and Fair Health in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_fair_or_poor_health,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "% of adults reporting fair health",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r poor-physical-health-diabetes}
+#| label: fig-poor-physical-health-diabetes
+#| fig-cap: "Diabetes Rates and Poor Health in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = average_number_of_physically_unhealthy_days,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "Average number of physically unhealthy days reported in past 30 days",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r physical-distress-diabetes}
+#| label: fig-physical-distress-diabetes
+#| fig-cap: "Diabetes Rates and Physical Distress in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_frequent_physical_distress,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "% of adults reporting 14 or more days of poor physical health per month",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r mental-distress-diabetes}
+#| label: fig-mental-distress-diabetes
+#| fig-cap: "Diabetes Rates and Mental Distress in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = percent_frequent_mental_distress,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "% of adults reporting 14 or more days of poor mental health per month",
+    caption = "Source: County Health Rankings (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r all-age-poverty-diabetes}
+#| label: fig-all-age-poverty-diabetes
+#| fig-cap: "Diabetes Rates and Poverty in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = saipe_pct_pov,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "% of all ages in poverty",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r poverty-ratio-under-1-diabetes}
+#| label: fig-poverty-ratio-under-1-diabetes
+#| fig-cap: "Diabetes Rates and Poverty Ratio Under 1 in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = acs_pct_person_inc_below99,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "% of population with an income to poverty ratio under 1.00",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r poverty-ratio-under-0.5-diabetes}
+#| label: fig-poverty-ratio-under-0.5-diabetes
+#| fig-cap: "Diabetes Rates and Poverty Ratio Under 0.5 in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = acs_pct_inc50,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "% of population with an income to poverty ratio under 0.5",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+```{r no-insurance-diabetes}
+#| label: fig-no-insurance-diabetes
+#| fig-cap: "Diabetes Rates and the Uninsured in Ohio's Counties"
+
+county_sdoh_chr %>%
+  ggplot(
+    aes(
+      x = acs_pct_uninsured,
+      y = percent_adults_with_diabetes,
+      color = appalachian
+    )
+  ) +
+  geom_point() +
+  scale_color_manual(
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  labs(
+    color = NULL,
+    y = "% of adults with diabetes",
+    x = "% of population with no health insurance coverage",
+    caption = "Source: County Health Rankings (2020) / SDOH Database (2020)"
+    ) +
+  scatter_plot_theme()
+
+```
+
+## Ohio Opportunity Index
+
+The [Ohio Opportunity Index (OOI)](https://grc.osu.edu/Projects/OhioOpportunityIndex) compiles over 34 variables measuring neighborhood conditions and opportunities, known to be associated with health and well-being, from a variety of domains into a single index score. This index score represents the degree of opportunity available at the Census tract level across Ohio (higher value means more opportunity) and can be used to assess overall neighborhood conditions, target interventions, and adjust evaluations for neighborhood-level risk. It can also be used to learn what types of factors are driving opportunity in specific Census tracts.
+
+The OOI variables comprise seven key domains:
+
+1.  Transportation
+2.  Education
+3.  Employment
+4.  Housing
+5.  Health
+6.  Access
+7.  Crime
+
+Within each domain, several variables that met validity criteria and were available to cover the entire state at a census tract level were identified.
+
+```{r readin-ooi-data}
+
+read.csv(here::here(
+  'data',
+  'oi_v2_tract_18.csv'
+  )) %>%
+  janitor::clean_names() -> ooi_df
+
+```
+
+```{r merge-geometry-in}
+
+library(tigris)
+
+tracts(
+  cb = TRUE,
+  year = 2018,
+  state = 39
+) -> tigtracts18
+
+tigtracts18 %>%
+  mutate(
+    GEOID = as.double(GEOID)
+  ) %>%
+  right_join(
+    ooi_df,
+    by = c('GEOID' = 'tract')
+  ) -> ooi
+
+```
+
+::: panel-tabset
+### OOI
+
+```{r ooi-index-2018-tract, fig.cap = "Ohio Opportunity Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = oi_18),
+    color = "white"
+    ) +
+  geom_sf(
+    data = sf::st_union(appmaptract), 
+    color = "#B86F52", size = 4, alpha = 0
+    ) +
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
+                       na.value = 'white') +
+  labs(
+    fill = 'Opportunity Index'
+    )
+
+```
+
+### Education
+
+```{r ooi-education-2018-tract, fig.cap = "Ohio Education Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_educ),
+    color = "white"
+    ) +
+  geom_sf(
+    data = sf::st_union(appmaptract), 
+    color = "#B86F52", size = 3, alpha = 0
+    ) +
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
+                       na.value = 'white') +
+  labs(
+    fill = 'Education Index (z-score)'
+    )
+
+```
+
+### Health
+
+```{r ooi-health-2018-tract, fig.cap = "Ohio Health Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+ooi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_health),
+    color = "white"
+    ) +
+  geom_sf(
+    data = sf::st_union(appmaptract), 
+    color = "#B86F52", size = 3, alpha = 0
+    ) +
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
+                       na.value = 'white') +
+  labs(
+    fill = 'Health Index (z-score)'
+    )
+
+```
+:::
+
+## Ohio Children's Opportunity Index
+
+The [Ohio Children's Opportunity Index (OOI)](https://grc.osu.edu/Projects/OhioOpportunityIndex) compiles over 54 variables measuring neighborhood conditions and opportunities, known to be associated with health and well-being, from a variety of domains into a single index score. This index score represents the degree of opportunity available at the Census tract level across Ohio (higher value means more opportunity) and can be used to assess overall neighborhood conditions, target interventions, and adjust evaluations for neighborhood-level risk. It can also be used to learn what types of factors are driving opportunity in specific Census tracts.
+
+The OCOI variables comprise eight key domains:
+
+1.  Access
+2.  Children's health
+3.  Criminal justice
+4.  Education
+5.  Environment
+6.  Family stability
+7.  Housing
+8.  Infant health. 
+
+Within each domain, several variables that met inclusion criteria and were available to cover the entire state at a census tract level were identified.
+
+
+```{r readin-coi-data}
+
+library(tidyverse)
+
+read.csv(here::here(
+  'data',
+  'coi_v1_tract_17_plus.csv'
+  )) %>%
+  janitor::clean_names() -> coi_df
+
+```
+
+```{r merge-coi-geometry}
+
+library(tigris)
+
+tracts(
+  cb = TRUE,
+  year = 2017,
+  state = 39
+) -> tigtracts17
+
+tigtracts17 %>%
+  mutate(
+    GEOID = as.double(GEOID)
+  ) %>%
+  right_join(
+    coi_df,
+    by = c('GEOID' = 'tract')
+  ) -> coi
+
+```
+
+::: panel-tabset
+### COI
+
+```{r coi-index-2017-tract, fig.cap = "Ohio Children's Opportunity Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = coi_plus_17),
+    color = "white"
+    ) + 
+  geom_sf(
+    data = sf::st_union(appmaptract), 
+    color = "#B86F52", size = 3, alpha = 0
+    ) +
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
+                       na.value = 'white') +
+  labs(
+    fill = "Opportunity Index"
+    )
+
+```
+
+### Access
+
+```{r coi-access-2017-tract, fig.cap = "Ohio Children's Access Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_access),
+    color = "white"
+    ) +
+  geom_sf(
+    data = sf::st_union(appmaptract), 
+    color = "#B86F52", size = 3, alpha = 0
+    ) +
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
+                       na.value = 'white') +
+  labs(
+    fill = "Access Index (z-score)"
+    )
+
+```
+
+### Education
+
+```{r coi-education-2017-tract, fig.cap = "Ohio Children's Education Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_education),
+    color = "white"
+    ) +
+  geom_sf(
+    data = sf::st_union(appmaptract), 
+    color = "#B86F52", size = 3, alpha = 0
+    ) +
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
+                       na.value = 'white') +
+  labs(
+    fill = "Education Index (z-score)"
+    )
+
+```
+
+### Environment
+
+```{r coi-env-2017-tract, fig.cap = "Ohio Children's Environment Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+
+coi %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = d_environment),
+    color = "white"
+    ) +
+  geom_sf(
+    data = sf::st_union(appmaptract), 
+    color = "#B86F52", size = 3, alpha = 0
+    ) +
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
+                       na.value = 'white') +
+  labs(
+    fill = "Environment Index (z-score)"
+    )
+
+```
 :::

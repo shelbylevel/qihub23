@@ -210,9 +210,8 @@ tigtracts %>%
 
 ```{r county-pop-map, fig.height = 9, fig.width = 9, include = TRUE}
 #| label: fig-county-pop-map
-#| fig-cap: "Ohio's Appalachian and Non-Appalachian Counties"
-
-```{r county-pop-map, fig.height = 9, fig.width = 9, include = TRUE, fig.cap = "Ohio's Appalachian and Non-Appalachian Counties"}
+#| fig-cap: Ohio's Appalachian and Non-Appalachian Counties
+#| fig-subcap: This map displays the total population for each county in Ohio. Franklin county has the highest total population and Vinton county has the lowest.
 
 county_df %>%
   ggplot() +
@@ -231,26 +230,21 @@ county_df %>%
   geom_sf(
     data = sf::st_union(appmapcounty), 
     color = "#B86F52", size = 3, alpha = 0
-    ) +   
+    ) + 
   coord_sf(crs = 4326) +
   blue_map_theme() +
   scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
-                       na.value = 'white', labels = scales::comma) +
+                       na.value = 'white', labels = scales::label_comma()) +
   labs(
     fill = 'Total Population'
-    ) +
-  ggthemes::theme_map() +
-  theme(
-    legend.position = "bottom",
-    legend.key.size = unit(1.5, "cm")
-    ) 
-  
+  )
 
 ```
 
 ```{r athens-zcta-pop-map, fig.height = 9, fig.width = 9, include = TRUE}
 #| label: fig-athens-zcta-pop-map
-#| fig-cap: "Athens County Zip Codes"
+#| fig-cap: Athens County Zip Codes
+#| fig-subcap: This map displays the total population for each zip code in Athens county. 45701 has the highest total population and 45740 has the lowest.
 
 zcta_df %>%
   mutate(
@@ -279,11 +273,10 @@ zcta_df %>%
   coord_sf(crs = 4326) +
   blue_map_theme() +
   scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
-                       na.value = 'white', labels = scales::comma) +
+                       na.value = 'white', labels = scales::label_comma()) +
   labs(
     fill = 'Total Population'
     ) 
-
 
 ```
 
@@ -303,16 +296,10 @@ tract_df %>%
   coord_sf(crs = 4326) +
   blue_map_theme() +
   scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E",
-                       na.value = 'white', labels = scales::comma) +
+                       na.value = 'white', labels = scales::label_comma()) +
   labs(
     fill = 'Total Population'
-    ) +
-  ggthemes::theme_map() +
-  theme(
-    legend.position = "bottom",
-    legend.key.size = unit(1.5, "cm")
-    ) 
-  
+    )
 
 ```
 
@@ -340,8 +327,8 @@ county_df %>%
   coord_sf(crs = 4326) +
   blue_map_theme() +
   scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E", 
-                       na.value = 'white', labels = scales::comma) +
-  labs(fill = "Dollars")
+                       na.value = 'white', labels = scales::label_dollar()) +
+  labs(fill = "Median Household Income")
 #  scale_fill_gradientn(colours = terrain.colors(5)) 
 
 ```
@@ -354,17 +341,64 @@ zcta_df %>%
   ggplot() +
   geom_sf(
     aes(fill = acs_median_hh_inc_zc),
-    color = "white") +
+    color = "white"
+    ) +
+    geom_sf(
+    data = tigcounties,
+    color = "black",
+    alpha = 0,
+    size = 2
+  ) +
   geom_sf(
     data = sf::st_union(appmapcounty), 
+    color = "#B86F52", 
+    size = 4, 
+    alpha = 0
+    ) +
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+                       na.value = 'white', labels = scales::label_dollar()) +
+  labs(fill = "Median Household Income")
+#  scale_fill_gradientn(colours = terrain.colors(5)) 
+
+```
+
+```{r athens-zcta-income-map, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-athens-zcta-income-map
+#| fig-cap: "Athens County Median Household Income by Zip Code"
+
+zcta_df %>%
+  mutate(
+    zipcode_num = as.integer(zipcode)
+  ) %>%
+  filter(
+    zipcode_num %in% c(45701, 45710, 45711, 45716, 45719, 43728, 45723, 45732, 45735, 45740, 45742, 45761, 45764, 45766, 45776, 45778, 45780, 45782)
+  ) %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_median_hh_inc_zc),
+    color = "white"
+    ) +
+  geom_sf_text(
+    aes(
+      label = NAME20
+      ),
+    color = "black",
+    size = 2.75,
+    family = 'Montserrat'
+    ) + 
+  geom_sf(
+    data = athensmap, 
     color = "#B86F52", size = 3, alpha = 0
     ) +   
   coord_sf(crs = 4326) +
   blue_map_theme() +
   scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
-                       na.value = 'white', labels = scales::comma) + 
-  labs(fill = "Dollars")
-#  scale_fill_gradientn(colours = terrain.colors(5)) 
+                       na.value = 'white', labels = scales::label_dollar()) +
+  labs(
+    fill = 'Median Household Income'
+    ) 
 
 ```
 
@@ -387,16 +421,38 @@ tract_df %>%
   coord_sf(crs = 4326) +
   blue_map_theme() +
   scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
-                       na.value = 'white', labels = scales::comma) + 
-  labs(fill = "Dollars")
+                       na.value = 'white', labels = scales::label_dollar()) +
+  labs(fill = "Median Household Income")
 #  scale_fill_gradientn(colours = terrain.colors(5)) 
+
+```
+
+```{r athens-tract-income-map, fig.height = 9, fig.width = 9, include = TRUE}
+#| label: fig-athens-tract-income-map
+#| fig-cap: "Athens County Median Household Income by Census Tract"
+
+tract_df %>%
+  filter(
+    COUNTYFP == '009'
+  ) %>%
+  ggplot() +
+  geom_sf(
+    aes(fill = acs_median_hh_inc),
+    color = "white"
+    ) + 
+  coord_sf(crs = 4326) +
+  blue_map_theme() +
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E",
+                       na.value = 'white', labels = scales::label_dollar()) +
+  labs(
+    fill = 'Median Household Income'
+    )
 
 ```
 
 ## SDOH Variables Available at the Census Tract Level
 
 ```{r tbl01}
-
 #| label: tbl-tbl01
 #| tbl-cap: Table of SDOH Variables
 
@@ -547,7 +603,9 @@ tigcounties %>%
 county_sdoh_chr %>%
   ggplot() +
   geom_sf(
-    aes(fill = (percent_adults_with_diabetes)/100)) +
+    aes(fill = (percent_adults_with_diabetes)/100),
+    color = 'white',
+    alpha = .9) +
   geom_sf_text(
     aes(
       label = county
@@ -562,7 +620,7 @@ county_sdoh_chr %>%
     ) +   
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E", na.value = 'white', labels = scales::comma) + 
+  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#45849E", na.value = 'white', labels = scales::label_percent()) + 
   labs(fill = "Percent",
        caption = "Source: County Health Rankings (2020)")
 
@@ -582,7 +640,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#45849E", "#D0D0D0")
+    values = c("#5CB0D3", "#D0D0D0")
     ) + 
   scale_x_continuous(
     labels = scales::label_dollar()
@@ -611,7 +669,10 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  scale_x_continuous(
+    labels = scales::label_percent()
     ) +
   labs(
     color = NULL,
@@ -630,14 +691,17 @@ county_sdoh_chr %>%
 county_sdoh_chr %>%
   ggplot(
     aes(
-      x = percent_physically_inactive,
+      x = percent_physically_inactive/100,
       y = percent_adults_with_diabetes,
       color = appalachian
     )
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
+    ) +
+  scale_x_continuous(
+    labels = scales::label_percent()
     ) +
   labs(
     color = NULL,
@@ -663,7 +727,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -689,7 +753,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -715,7 +779,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -741,7 +805,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -767,7 +831,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -793,7 +857,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -819,7 +883,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -845,7 +909,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -871,7 +935,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -897,7 +961,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -923,7 +987,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -935,7 +999,7 @@ county_sdoh_chr %>%
 
 ```
 
-```{r num-rhcs-diabetes, include = FALSE}
+```{r num-rhcs-diabetes, include = TRUE}
 #| label: fig-num-rhcs-diabetes
 #| fig-cap: "Diabetes Rates and Number of Rural Health Clinics in Ohio's Counties"
 
@@ -949,7 +1013,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -961,7 +1025,7 @@ county_sdoh_chr %>%
 
 ```
 
-```{r max-dist-fqhcs-diabetes, include = FALSE}
+```{r max-dist-fqhcs-diabetes, include = TRUE}
 
 county_sdoh_chr %>%
   ggplot(
@@ -973,7 +1037,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -985,7 +1049,7 @@ county_sdoh_chr %>%
 
 ```
 
-```{r mean-dist-fqhcs-diabetes, include = FALSE}
+```{r mean-dist-fqhcs-diabetes, include = TRUE}
 
 county_sdoh_chr %>%
   ggplot(
@@ -997,7 +1061,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -1009,7 +1073,7 @@ county_sdoh_chr %>%
 
 ```
 
-```{r median-dist-fqhcs-diabetes, include = FALSE}
+```{r median-dist-fqhcs-diabetes, include = TRUE}
 
 county_sdoh_chr %>%
   ggplot(
@@ -1021,7 +1085,7 @@ county_sdoh_chr %>%
   ) +
   geom_point() +
   scale_color_manual(
-    values = c("#5CB0D3", "#AEABAB")
+    values = c("#5CB0D3", "#D0D0D0")
     ) +
   labs(
     color = NULL,
@@ -1090,11 +1154,11 @@ ooi %>%
     ) +
   geom_sf(
     data = sf::st_union(appmaptract), 
-    color = "#B86F52", size = 3, alpha = 0
+    color = "#B86F52", size = 4, alpha = 0
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
     fill = 'Opportunity Index'
@@ -1102,7 +1166,7 @@ ooi %>%
 
 ```
 
-```{r ooi-crime-2018-tract, fig.cap = "Ohio Crime Index by Census Tract", fig.height = 9, fig.width = 9, include = FALSE}
+```{r ooi-crime-2018-tract, fig.cap = "Ohio Crime Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
 
 ooi %>%
   ggplot() +
@@ -1116,10 +1180,10 @@ ooi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = 'Crime Index'
+    fill = 'Crime Index (z-score)'
     )
 
 ```
@@ -1138,15 +1202,15 @@ ooi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = 'Education Index'
+    fill = 'Education Index (z-score)'
     )
 
 ```
 
-```{r ooi-employ-2018-tract, fig.cap = "Ohio Employment Index by Census Tract", fig.height = 9, fig.width = 9, include = FALSE}
+```{r ooi-employ-2018-tract, fig.cap = "Ohio Employment Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
 
 ooi %>%
   ggplot() +
@@ -1160,10 +1224,10 @@ ooi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = 'Employment Index'
+    fill = 'Employment Index (z-score)'
     )
 
 ```
@@ -1182,10 +1246,10 @@ ooi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = 'Environment Index'
+    fill = 'Environment Index (z-score)'
     )
 
 ```
@@ -1204,15 +1268,15 @@ ooi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = 'Health Index'
+    fill = 'Health Index (z-score)'
     )
 
 ```
 
-```{r ooi-trans-2018-tract, fig.cap = "Ohio Transportation Index by Census Tract", fig.height = 9, fig.width = 9, include = FALSE}
+```{r ooi-trans-2018-tract, fig.cap = "Ohio Transportation Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
 
 ooi %>%
   ggplot() +
@@ -1226,10 +1290,10 @@ ooi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = 'Transportation Index'
+    fill = 'Transportation Index (z-score)'
     )
 
 ```
@@ -1248,10 +1312,10 @@ ooi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = 'Housing Index'
+    fill = 'Housing Index (z-score)'
     )
 
 ```
@@ -1321,10 +1385,10 @@ coi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = "Children's Family Stability Index"
+    fill = "Opportunity Index"
     )
 
 ```
@@ -1343,15 +1407,15 @@ coi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = "Family Stability Index"
+    fill = "Family Stability Index (z-score)"
     )
 
 ```
 
-```{r coi-infant-2017-tract, fig.cap = "Ohio Infant Health Index by Census Tract", fig.height = 9, fig.width = 9, include = FALSE}
+```{r coi-infant-2017-tract, fig.cap = "Ohio Infant Health Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
 
 coi %>%
   ggplot() +
@@ -1365,15 +1429,15 @@ coi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = "Infant Health Index"
+    fill = "Infant Health Index (z-score)"
     )
 
 ```
 
-```{r coi-child-2017-tract, fig.cap = "Ohio Children's Health Index by Census Tract", fig.height = 9, fig.width = 9, include = FALSE}
+```{r coi-child-2017-tract, fig.cap = "Ohio Children's Health Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
 
 coi %>%
   ggplot() +
@@ -1387,10 +1451,10 @@ coi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = "Children's Health Index"
+    fill = "Children's Health Index (z-score)"
     )
 
 ```
@@ -1409,10 +1473,10 @@ coi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = "Housing Index"
+    fill = "Housing Index (z-score)"
     )
 
 ```
@@ -1431,10 +1495,10 @@ coi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = "Access Index"
+    fill = "Access Index (z-score)"
     )
 
 ```
@@ -1453,10 +1517,10 @@ coi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = "Education Index"
+    fill = "Education Index (z-score)"
     )
 
 ```
@@ -1475,15 +1539,15 @@ coi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = "Environment Index"
+    fill = "Environment Index (z-score)"
     )
 
 ```
 
-```{r coi-crime-2017-tract, fig.cap = "Ohio Children's Crime Index by Census Tract", fig.height = 9, fig.width = 9, include = FALSE}
+```{r coi-crime-2017-tract, fig.cap = "Ohio Children's Crime Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
 
 coi %>%
   ggplot() +
@@ -1497,10 +1561,10 @@ coi %>%
     ) +
   coord_sf(crs = 4326) +
   blue_map_theme() +
-  scale_fill_gradient2(low = "#ebeaea", mid = "#d6ebf4", high = "#2e586a", 
+  scale_fill_gradient2(low = "#ebf5fa", mid = "#c2e1ef", high = "#2e586a", 
                        na.value = 'white') +
   labs(
-    fill = "Crime Index"
+    fill = "Crime Index (z-score)"
     )
 
 ```
