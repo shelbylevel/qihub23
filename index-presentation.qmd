@@ -2,6 +2,7 @@
 title: "QI Hub Presentation"
 format: revealjs
 css: css/sl_theme.css
+theme: white
 ---
 
 ```{r setup, include=FALSE}
@@ -280,7 +281,8 @@ zcta_df %>%
 
 ```{r athens-tract-pop-map, fig.height = 9, fig.width = 9, include = TRUE}
 #| label: fig-athens-tract-pop-map
-#| fig-cap: "Athens County Census Tracts"
+#| fig-cap: Athens County Census Tracts
+#| fig-subcap: This map displays the total population for each census tract in Athens county. 45701 has the highest total population and 45740 has the lowest.
 
 tract_df %>%
   filter(
