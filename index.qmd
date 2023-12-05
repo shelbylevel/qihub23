@@ -682,7 +682,7 @@ county_sdoh_chr %>%
 #| label: fig-food-insecure-diabetes
 #| fig-cap: "Diabetes Rates and Food Insecurity in Ohio's Counties"
 #| fig-subcap: This scatter-plot displays the relationship between food insecurity and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is very high (r(86) = .87, p < .001).
-#| fig-alt: A scatter-plot displaying the relationship between food insecurity on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Scioto county is the top left-most point with the lowest household income and highest diabetes rate. Delaware county is the bottom right-most point with the highest household income and lowest diabetes rate.
+#| fig-alt: A scatter-plot displaying the relationship between food insecurity on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Scioto county is the top right-most point with the highest food insecurity rate and highest diabetes rate. Delaware county is the bottom left-most point with the lowest food insecurity rate and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -719,7 +719,7 @@ county_sdoh_chr %>%
 #| label: fig-physical-inactivity-diabetes
 #| fig-cap: "Diabetes Rates and Physical Inactivity in Ohio's Counties"
 #| fig-subcap: This scatter-plot displays the relationship between phsyical inactivity and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is high (r(86) = .76, p < .001).
-#| fig-alt: A scatter-plot displaying the relationship between percent of adults with no leisure-time physical activity on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Scioto county is the top left-most point with the lowest household income and highest diabetes rate. Delaware county is the bottom right-most point with the highest household income and lowest diabetes rate.
+#| fig-alt: A scatter-plot displaying the relationship between percent of adults with no leisure-time physical activity on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Scioto county is the top right-most point with the highest physical inactivity rate and highest diabetes rate. Delaware county is the bottom left-most point with the lowest physical inactivity rate and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -755,7 +755,8 @@ county_sdoh_chr %>%
 ```{r obesity-diabetes}
 #| label: fig-obesity-diabetes
 #| fig-cap: "Diabetes Rates and Obesity in Ohio's Counties"
-#| #| fig-subcap: This scatter-plot displays the relationship between obesity rates and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is high (r(86) = .76, p < .001).
+#| fig-subcap: This scatter-plot displays the relationship between obesity and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is moderate (r(86) = .59, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between percent of adults with obesity on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Scioto county is the top right-most point with the highest obesity rate and highest diabetes rate. Delaware county is the bottom left-most point with the lowest obesity rate and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -787,7 +788,9 @@ county_sdoh_chr %>%
 
 ```{r poor-fair-health-diabetes}
 #| label: fig-poor-fair-health-diabetes
-#| fig-cap: "Diabetes Rates and Fair Health in Ohio's Counties"
+#| fig-cap: "Diabetes Rates and Fair/Poor Health in Ohio's Counties"
+#| fig-subcap: This scatter-plot displays the relationship between fair/poor health and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is very high (r(86) = .90, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between percent of adults reporting fair or poor health on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Scioto, Pike, and Adams counties are the top right-most points with the highest fair/poor health rates and highest diabetes rates. Delaware county is the bottom left-most point with the lowest fair/poor health rate and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -804,7 +807,7 @@ county_sdoh_chr %>%
   labs(
     color = NULL,
     y = "% of adults with diabetes",
-    x = "% of adults reporting fair health",
+    x = "% of adults reporting fair/poor health",
     caption = "Source: County Health Rankings (2020)"
     ) +
   scatter_plot_theme()
@@ -813,7 +816,9 @@ county_sdoh_chr %>%
 
 ```{r poor-physical-health-diabetes}
 #| label: fig-poor-physical-health-diabetes
-#| fig-cap: "Diabetes Rates and Poor Health in Ohio's Counties"
+#| fig-cap: "Diabetes Rates and Poor Physical Health in Ohio's Counties"
+#| fig-subcap: This scatter-plot displays the relationship between poor physical health and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is very high (r(86) = .86, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between the average number of physically unhealthy days in the past month on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Scioto county is the top right-most point with the highest number of physically unhealthy days and highest diabetes rate. Delaware county is the bottom left-most point with the lowest number of physically unhealthy days and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -840,6 +845,8 @@ county_sdoh_chr %>%
 ```{r physical-distress-diabetes}
 #| label: fig-physical-distress-diabetes
 #| fig-cap: "Diabetes Rates and Physical Distress in Ohio's Counties"
+#| fig-subcap: This scatter-plot displays the relationship between physical distress and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is very high (r(86) = .87, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between percent of adults reporting 14 or more poor physical health days per month on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Scioto and Vinton counties are the top right-most points with the highest poor physical health rates and highest diabetes rates. Delaware county is the bottom left-most point with the lowest poor physical health rates and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -866,6 +873,8 @@ county_sdoh_chr %>%
 ```{r poor-mental-health-diabetes}
 #| label: fig-mental-health-diabetes
 #| fig-cap: "Diabetes Rates and Poor Mental Health in Ohio's Counties"
+#| fig-subcap: This scatter-plot displays the relationship between poor mental health and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is high (r(86) = .63, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between the average number of mentally unhealthy days in the past month on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Vinton and Athens counties are the top right-most points with the highest number of mentally unhealthy days and highest diabetes rates. Delaware county is the bottom left-most point with the lowest number of mentally unhealthy days and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -892,6 +901,8 @@ county_sdoh_chr %>%
 ```{r mental-distress-diabetes}
 #| label: fig-mental-distress-diabetes
 #| fig-cap: "Diabetes Rates and Mental Distress in Ohio's Counties"
+#| fig-subcap: This scatter-plot displays the relationship between mental distress and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is high (r(86) = .77, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between percent of adults reporting 14 or more poor mental health days per month on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Vinton county is the top right-most point with the highest poor mental health rate and highest diabetes rate. Delaware county is the bottom left-most point with the lowest poor mental health rate and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -918,6 +929,8 @@ county_sdoh_chr %>%
 ```{r all-age-poverty-diabetes}
 #| label: fig-all-age-poverty-diabetes
 #| fig-cap: "Diabetes Rates and Poverty in Ohio's Counties"
+#| fig-subcap: This scatter-plot displays the relationship between poverty and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is very high (r(86) = .88, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between percent of all ages in poverty on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Scioto county is the top right-most point with the highest poverty rate and highest diabetes rate. Delaware county is the bottom left-most point with the lowest poverty rate and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -944,6 +957,8 @@ county_sdoh_chr %>%
 ```{r poverty-ratio-under-1-diabetes}
 #| label: fig-poverty-ratio-under-1-diabetes
 #| fig-cap: "Diabetes Rates and Poverty Ratio Under 1 in Ohio's Counties"
+#| fig-subcap: This scatter-plot displays the relationship between poverty and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is very high (r(86) = .88, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between percent of population with an income to poverty ration under 1.0 on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Athens and Scioto counties are the top right-most points with the highest poverty rates and highest diabetes rates. Delaware county is the bottom left-most point with the lowest poverty rate and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -970,6 +985,8 @@ county_sdoh_chr %>%
 ```{r poverty-ratio-under-0.5-diabetes}
 #| label: fig-poverty-ratio-under-0.5-diabetes
 #| fig-cap: "Diabetes Rates and Poverty Ratio Under 0.5 in Ohio's Counties"
+#| fig-subcap: This scatter-plot displays the relationship between poverty and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is high (r(86) = .78, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between percent of population with an income to poverty ration under 0.5 on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Athens and Scioto counties are the top right-most points with the highest poverty rates and highest diabetes rates. Delaware county is the bottom left-most point with the lowest poverty rate and lowest diabetes rate.
 
 county_sdoh_chr %>%
   ggplot(
@@ -996,6 +1013,8 @@ county_sdoh_chr %>%
 ```{r no-insurance-diabetes}
 #| label: fig-no-insurance-diabetes
 #| fig-cap: "Diabetes Rates and the Uninsured in Ohio's Counties"
+#| fig-subcap: This scatter-plot displays the relationship between no health insurance and diabetes rates for each Appalachian and non-Appalachian county in Ohio. The effect size of this correlation is low (r(86) = .21, p < .001).
+#| fig-alt: A scatter-plot displaying the relationship between percent of population with no health insurance on the x-axis and percent of adults with diabetes on the y-axis for each Appalachian and non-Appalachian county in Ohio. Appalachian counties make up the majority of the top right-most points with the highest uninsured rates and highest diabetes rates. Non-Appalachian counties make up the bottom left-most points with the lowest uninsured rates and lowest diabetes rates.
 
 county_sdoh_chr %>%
   ggplot(
@@ -1019,7 +1038,7 @@ county_sdoh_chr %>%
 
 ```
 
-```{r num-fqhcs-diabetes}
+```{r num-fqhcs-diabetes, eval = FALSE}
 #| label: fig-num-fqhcs-diabetes
 #| fig-cap: "Diabetes Rates and Number of FQHCs in Ohio's Counties"
 
@@ -1045,7 +1064,7 @@ county_sdoh_chr %>%
 
 ```
 
-```{r num-rhcs-diabetes, include = TRUE}
+```{r num-rhcs-diabetes, eval = FALSE}
 #| label: fig-num-rhcs-diabetes
 #| fig-cap: "Diabetes Rates and Number of Rural Health Clinics in Ohio's Counties"
 
@@ -1071,7 +1090,7 @@ county_sdoh_chr %>%
 
 ```
 
-```{r max-dist-fqhcs-diabetes, include = TRUE}
+```{r max-dist-fqhcs-diabetes, eval = FALSE}
 
 county_sdoh_chr %>%
   ggplot(
@@ -1095,7 +1114,7 @@ county_sdoh_chr %>%
 
 ```
 
-```{r mean-dist-fqhcs-diabetes, include = TRUE}
+```{r mean-dist-fqhcs-diabetes, eval = FALSE}
 
 county_sdoh_chr %>%
   ggplot(
@@ -1119,7 +1138,7 @@ county_sdoh_chr %>%
 
 ```
 
-```{r median-dist-fqhcs-diabetes, include = TRUE}
+```{r median-dist-fqhcs-diabetes, eval = FALSE}
 
 county_sdoh_chr %>%
   ggplot(
@@ -1130,6 +1149,10 @@ county_sdoh_chr %>%
     )
   ) +
   geom_point() +
+      geom_text(
+    aes(
+      label = NAME
+    )) +
   scale_color_manual(
     values = c("#5CB0D3", "#D0D0D0")
     ) +
