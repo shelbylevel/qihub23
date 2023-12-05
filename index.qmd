@@ -1191,7 +1191,7 @@ The overall Opportunity Index Score was created by using factor analysis methods
 -   Life expectancy
 -   All-cause age-adjusted mortality
 
-```{r readin-ooi-data}
+```{r readin-ooi-data, include = FALSE}
 
 read.csv(here::here(
   'data',
@@ -1201,7 +1201,7 @@ read.csv(here::here(
 
 ```
 
-```{r merge-geometry-in}
+```{r merge-geometry-in, include = FALSE}
 
 library(tigris)
 
@@ -1456,7 +1456,7 @@ The OCOI was validated by testing the association of the OCOI and the domain sco
 -   Life expectancy
 -   All-cause age-adjusted mortality
 
-```{r readin-coi-data}
+```{r readin-coi-data, include = FALSE}
 
 library(tidyverse)
 
@@ -1468,7 +1468,7 @@ read.csv(here::here(
 
 ```
 
-```{r merge-coi-geometry}
+```{r merge-coi-geometry, include = FALSE}
 
 library(tigris)
 
