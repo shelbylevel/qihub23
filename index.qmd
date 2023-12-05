@@ -656,6 +656,12 @@ county_sdoh_chr %>%
     )
   ) +
   geom_point() +
+  ggforce::geom_mark_circle(
+    aes(
+      label = NAME,
+      filter = NAME == "Delaware"
+      )
+    ) + 
   scale_color_manual(
     values = c("#5CB0D3", "#D0D0D0")
     ) + 
@@ -687,6 +693,12 @@ county_sdoh_chr %>%
     )
   ) +
   geom_point() +
+  ggforce::geom_mark_circle(
+    aes(
+      label = NAME,
+      filter = NAME == "Scioto"
+      )
+    ) + 
   scale_color_manual(
     values = c("#5CB0D3", "#D0D0D0")
     ) +
@@ -718,6 +730,12 @@ county_sdoh_chr %>%
     )
   ) +
   geom_point() +
+  ggforce::geom_mark_circle(
+    aes(
+      label = NAME,
+      filter = NAME == "Scioto"
+      )
+    ) + 
   scale_color_manual(
     values = c("#5CB0D3", "#D0D0D0")
     ) +
@@ -748,6 +766,12 @@ county_sdoh_chr %>%
     )
   ) +
   geom_point() +
+  ggforce::geom_mark_circle(
+    aes(
+      label = NAME,
+      filter = NAME == "Scioto"
+      )
+    ) + 
   scale_color_manual(
     values = c("#5CB0D3", "#D0D0D0")
     ) +
@@ -797,8 +821,8 @@ county_sdoh_chr %>%
       x = average_number_of_physically_unhealthy_days,
       y = percent_adults_with_diabetes,
       color = appalachian
-    )
-  ) +
+      )
+    ) +
   geom_point() +
   scale_color_manual(
     values = c("#5CB0D3", "#D0D0D0")
