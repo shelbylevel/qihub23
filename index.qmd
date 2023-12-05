@@ -1227,7 +1227,7 @@ tigtracts18 %>%
 #| label: fig-ooi-index-tract
 #| fig-cap: Ohio Opportunity Index by Census Tract
 #| fig-subcap: This map displays the Ohio Opportunity Index score (from 0 to 100) for each census tract in Ohio. Darker shades of blue represent higher levels of neighborhood opportunity and lighter shades represent lower levels of neighborhood opportunity.
-#| fig-alt: A map displaying the Ohio Opportunity Index score from 0 to 100) for each census tract in Ohio. X region has the highest levels of neighborhood opportunity and Y region has the lowest levels of neighborhood opportunity.
+#| fig-alt: A map displaying the Ohio Opportunity Index score (from 0 to 100) for each census tract in Ohio. X region has the highest levels of neighborhood opportunity and Y region has the lowest levels of neighborhood opportunity.
 
 ooi %>%
   ggplot() +
@@ -1254,7 +1254,7 @@ ooi %>%
 #| label: fig-ooi-crime-index-tract
 #| fig-cap: Ohio Crime Index by Census Tract
 #| fig-subcap: This map displays the Ohio Crime Index score for each census tract in Ohio. The crime domain contains five variabless: homicide, aggravated assault and sexual assault; robbery; burglary, larceny-theft and motor vehicle theft; public drunkenness and DUI; and drug involved crimes. Darker shades of blue represent lower levels of neighborhood crime and lighter shades represent higher levels of neighborhood crime.
-#| fig-alt: A map displaying the Ohio Crime Index score for each census tract in Ohio. Suburban areas surrounding Ohio's major cities (Columbus, Cleveland, Cincinnati, Toledo, and Dayton) have the lowest levels of neighborhood crime and Ohio's major cities along with the Appalachian region have the highest levels of neighborhood crime.
+#| fig-alt: A map displaying the Ohio Crime Index score for each census tract in Ohio. The map displays little to no changes in color across the state, indicating minimal discrepencies across regions.
 
 ooi %>%
   ggplot() +
@@ -1281,7 +1281,7 @@ ooi %>%
 #| label: fig-ooi-edu-index-tract
 #| fig-cap: Ohio Education Index by Census Tract
 #| fig-subcap: This map displays the Ohio Education Index score for each census tract in Ohio. The education domain contains 5 variables: educational attainment, average school performance, average free and reduced lunch participation rate, high school graduation rate, and residential internet connectivity. Darker shades of blue represent higher levels of neighborhood education and lighter shades represent lower levels of neighborhood education.
-#| fig-alt: A map displaying the Ohio Education Index score for each census tract in Ohio. X region has the highest levels of neighborhood education and Y region has the lowest levels of neighborhood education.
+#| fig-alt: A map displaying the Ohio Education Index score for each census tract in Ohio. Suburban areas surrounding Ohio's major cities (Columbus, Cleveland, Cincinnati, Toledo, and Dayton) have the highest levels of neighborhood education and Ohio's major cities along with the Appalachian region have the lowest levels of neighborhood education.
 
 ooi %>%
   ggplot() +
@@ -1308,7 +1308,7 @@ ooi %>%
 #| label: fig-ooi-emp-index-tract
 #| fig-cap: Ohio Education Index by Census Tract
 #| fig-subcap: This map displays the Ohio Employment Index score for each census tract in Ohio. The employment domain  contains 4 variables: low-wage job access (total entry-level jobs divided by total people with high-school or less education), access to workforce or job training sites, unemployment, and poverty. Darker shades of blue represent higher levels of neighborhood employment and lighter shades represent lower levels of neighborhood employment.
-#| fig-alt: A map displaying the Ohio Employment Index score for each census tract in Ohio. X region has the highest levels of neighborhood employment and Y region has the lowest levels of neighborhood employment.
+#| fig-alt: A map displaying the Ohio Employment Index score for each census tract in Ohio. The map displays little to no changes in color across the state, indicating minimal discrepencies across regions.
 
 ooi %>%
   ggplot() +
@@ -1362,7 +1362,7 @@ ooi %>%
 #| label: fig-ooi-health-index-tract
 #| fig-cap: Ohio Health Index by Census Tract
 #| fig-subcap: This map displays the Ohio Health Index score for each census tract in Ohio. The health domain contains 8 variables: age-adjusted mortality rate, preventable ED admits/visits, diabetes admits/diagnoses, access to grocery stores and access to medical providers. Darker shades of blue represent higher levels of neighborhood health and lighter shades represent lower levels of neighborhood health.
-#| fig-alt: A map displaying the Ohio Health Index score for each census tract in Ohio. X region has the highest levels of neighborhood health and Y region has the lowest levels of neighborhood health.
+#| fig-alt: A map displaying the Ohio Health Index score for each census tract in Ohio. Suburban areas surrounding Ohio's major cities (Columbus, Cleveland, Cincinnati, Toledo, and Dayton) have the highest levels of neighborhood health and Ohio's major cities along with the Appalachian region have the lowest levels of neighborhood health.
 
 ooi %>%
   ggplot() +
@@ -1389,7 +1389,7 @@ ooi %>%
 #| label: fig-ooi-trans-index-tract
 #| fig-cap: Ohio Transportation Index by Census Tract
 #| fig-subcap: This map displays the Ohio Transportation Index score for each census tract in Ohio. The transportation domain contains 4 variables: access to public transit, average commute to work time, housholds without vehicle access and traffic proximity. Darker shades of blue represent higher levels of neighborhood transportation and lighter shades represent lower levels of neighborhood transportation.
-#| fig-alt: A map displaying the Ohio Transportation Index score for each census tract in Ohio. X region has the highest levels of neighborhood transportation and Y region has the lowest levels of neighborhood transportation.
+#| fig-alt: A map displaying the Ohio Transportation Index score for each census tract in Ohio. The map displays little to no changes in color across the state, indicating minimal discrepencies across regions.
 
 ooi %>%
   ggplot() +
@@ -1489,7 +1489,12 @@ tigtracts17 %>%
 
 ```
 
-```{r coi-index-2017-tract, fig.cap = "Ohio Children's Opportunity Index by Census Tract", fig.height = 9, fig.width = 9, include = TRUE}
+```{r coi-index-2017-tract, fig.height = 9, fig.width = 9, include = TRUE}
+
+#| label: fig-coi-index-tract
+#| fig-cap: Ohio Children's Opportunity Index by Census Tract
+#| fig-subcap: This map displays the Ohio Children's Opportunity Index score (from 0 to 100) for each census tract in Ohio. Darker shades of blue represent higher levels of neighborhood opportunity and lighter shades represent lower levels of neighborhood opportunity.
+#| fig-alt: A map displaying the Ohio Children's Opportunity Index score (from 0 to 100) for each census tract in Ohio. X region has the highest levels of neighborhood opportunity and Y region has the lowest levels of neighborhood opportunity.
 
 coi %>%
   ggplot() +
